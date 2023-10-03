@@ -1,0 +1,29 @@
+{
+  "name": "convergence-market-maker-sample",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "npx tsc",
+    "format": "prettier --write .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@solana/web3.js": "^1.78.5",
+    "axios": "^1.5.0",
+    "bs58": "^5.0.0",
+    "commander": "^11.0.0",
+    "dotenv": "^16.3.1",
+    "figlet": "^1.6.0",
+    "winston": "^3.10.0"
+  },
+  "devDependencies": {
+    "@types/bs58": "^4.0.1",
+    "@types/node": "^20.7.0",
+    "prettier": "^3.0.3",
+    "typescript": "^5.2.2"
+  }
+}

@@ -3,6 +3,7 @@ import {
   createCollateralAccount,
   getCollateralAccount,
 } from "../../helpers/collateral";
+import { broadcastTransaction } from "../../helpers/utils";
 
 export const createCollateralCommand = new Command("create-collateral-account")
   .description("Create collateral account by wallet address")
@@ -16,9 +17,11 @@ export const createCollateralCommand = new Command("create-collateral-account")
       }
 
       // creating new collateral account
-      const newCollateralAccount = await createCollateralAccount();
+      const base64Tx = await createCollateralAccount();
 
-      console.log("New collateral account:", newCollateralAccount);
+      // broadcasting transaction on chain
+      const signature = await broadcastTransaction(base64Tx);
+      console.log("Tx signature =>", signature);
     } catch (error: any) {
       console.error("An error occurred:", error);
     }

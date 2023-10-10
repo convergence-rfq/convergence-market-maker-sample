@@ -1,4 +1,5 @@
 import axios from "axios";
+import { airDropSol } from "./utils";
 
 export async function getCollateralAccount() {
   try {
@@ -45,6 +46,9 @@ export async function createCollateralAccount() {
       console.error("PUBLIC_KEY is not defined in the .env file.");
       process.exit(1);
     }
+    
+    // airdrop before creating account
+    await airDropSol(walletAddress)
 
     // Prepare the request body
     const requestBody = {

@@ -1,5 +1,7 @@
 import {
   Keypair,
+  LAMPORTS_PER_SOL,
+  PublicKey,
   Transaction,
   sendAndConfirmTransaction,
 } from "@solana/web3.js";
@@ -29,5 +31,17 @@ export const broadcastTransaction = async (base64Response: string) => {
   } catch (error) {
     console.error("Error decoding private key:", error);
     process.exit(1);
+  }
+};
+
+export const airDropSol = async (publicKey: string) => {
+  try {
+    const airdropSignature = await connection.requestAirdrop(
+      new PublicKey(publicKey),
+      LAMPORTS_PER_SOL
+    );
+    console.log('air drop signature', airdropSignature)
+  } catch (error) {
+    console.error("Error decoding private key:", error);
   }
 };

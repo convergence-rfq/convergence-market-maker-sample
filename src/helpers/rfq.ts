@@ -68,7 +68,7 @@ export async function createRFQ(createRFQJasonData: any) {
       amount: createRFQJasonData.amount,
       quoteMint: createRFQJasonData.quoteMint,
       baseMint: createRFQJasonData.baseMint,
-      address: createRFQJasonData.address,
+      address: walletAddress,
       orderType: createRFQJasonData.orderType,
       rfqSize: createRFQJasonData.rfqSize,
       rfqExpiry: createRFQJasonData.rfqExpiry,

@@ -4,8 +4,8 @@
 
 ## Using
 
-Add environment variables in .env file
-In order to create rfq may need to update json files in api-input folder
+Add environment variables in .env file.
+You may also need to update JSON files in the 'api-input' folder in order to create an RFQ.
 
 Install dependencies by running
 
@@ -19,7 +19,7 @@ Then, build the project
 $ npm run build
 ```
 
-Then, run any command
+Then, run any command like this
 
 ```
 $ node dist/index.js get-instruments

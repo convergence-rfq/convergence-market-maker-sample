@@ -11,7 +11,7 @@ export const createCollateralCommand = new Command("create-collateral-account")
     try {
       // checking if already exists
       const collateralAccount = await getCollateralAccount();
-      if (collateralAccount) {
+      if (collateralAccount && Object.keys(collateralAccount).length > 0) {
         console.log("Collateral account already exists:", collateralAccount);
         return;
       }

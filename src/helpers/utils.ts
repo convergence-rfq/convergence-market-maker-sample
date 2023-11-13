@@ -88,3 +88,26 @@ export const registerNewSolanaAddress = async () => {
     console.log(error);
   }
 };
+
+type TokenAddresses = {
+  msol: string;
+  usdc: string;
+  btc: string;
+  wsol: string;
+};
+
+const tokenAddresses: TokenAddresses = {
+  msol: 'FYQ5MgByxnkfGAUzNcbaD734VK8CdEUX49ioTkokypRc',
+  usdc: 'BREWDGvXEQKx9FkZrSCajzjy4cpm9hofzze3b41Z3V4p',
+  btc: 'A3c9ThQZTUruMm56Eu4fxVwRosg4nBTpJe2B1pxBMYK7',
+  wsol: 'So11111111111111111111111111111111111111112',
+};
+
+export const getAddressByTokenName = (tokenName: keyof TokenAddresses) => {
+  if (tokenAddresses.hasOwnProperty(tokenName)) {
+    return tokenAddresses[tokenName];
+  } else {
+    return "Token not found";
+  }
+}
+

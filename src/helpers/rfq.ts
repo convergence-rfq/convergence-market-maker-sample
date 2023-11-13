@@ -1,4 +1,5 @@
 import axios from "axios";
+import { getAddressByTokenName } from "./utils";
 
 export async function getRFQs(getRFQJsonData: any) {
   try {
@@ -66,8 +67,8 @@ export async function createRFQ(createRFQJasonData: any) {
     const requestBody = {
       rfqType: createRFQJasonData.rfqType,
       amount: createRFQJasonData.amount,
-      quoteMint: createRFQJasonData.quoteMint,
-      baseMint: createRFQJasonData.baseMint,
+      quoteMint: getAddressByTokenName(createRFQJasonData?.quoteMint?.toLowerCase()),
+      baseMint: getAddressByTokenName(createRFQJasonData?.baseMint?.toLowerCase()),
       address: walletAddress,
       orderType: createRFQJasonData.orderType,
       rfqSize: createRFQJasonData.rfqSize,

@@ -51,7 +51,7 @@ function validateRfqSize(value: string) {
   const rfqSize = ["fixed-base", "fixed-quote", "open"];
   if (!rfqSize.includes(value)) {
     console.error(
-      "Invalid RFQ size. Allowed values are: [fixed-base, fixed-quote, open]",
+      `Invalid RFQ size. Allowed values are: ${rfqSize.map(x => x)}`,
     );
     process.exit(1);
   }
@@ -80,6 +80,28 @@ function validateSolanaPublicKey(address: string, arg: string) {
   }
 }
 
+function validateMintAddress(baseMint: string, quoteMint: string) {
+  if (baseMint.toLowerCase() === quoteMint.toLowerCase()) {
+    console.error(
+      `Base and quote mints can not be same.`,
+    );
+    process.exit(1);
+  }
+
+  const allowedTokens = ['msol', 'wsol', 'btc', 'usdc']
+  if (!allowedTokens.includes(baseMint.toLowerCase())) {
+    console.error(
+      `Invalid base mint: ${baseMint}, allowed [${allowedTokens.map(x => x)}]`,
+    );
+    process.exit(1);
+  }
+  if (!allowedTokens.includes(quoteMint.toLowerCase())) {
+    console.error(
+      `Invalid quote mint: ${quoteMint}, allowed [${allowedTokens.map(x => x)}]`,
+    );
+    process.exit(1);
+  }
+}
 function validateTime(value: string, arg: string) {
   const amount = parseFloat(value);
   if (isNaN(amount) || amount <= 0) {
@@ -96,9 +118,7 @@ function validateInputs(data: any) {
   validateOrderType(data.orderType);
   validateRfqSize(data.rfqSize);
   validateAmount(data.amount);
-  validateSolanaPublicKey(data.quoteMint, "quoteMint");
-  validateSolanaPublicKey(data.baseMint, "baseMint");
-  validateSolanaPublicKey(data.address, "address");
+  validateMintAddress(data.baseMint, data.quoteMint);
   validateTime(data.rfqExpiry, "rfqExpiry");
   validateTime(data.settlementWindow, "settlementWindow");
 }

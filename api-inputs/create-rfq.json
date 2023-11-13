@@ -1,8 +1,8 @@
 {
   "rfqType": "spot",
   "amount": 2,
-  "quoteMint": "BREWDGvXEQKx9FkZrSCajzjy4cpm9hofzze3b41Z3V4p",
-  "baseMint": "FYQ5MgByxnkfGAUzNcbaD734VK8CdEUX49ioTkokypRc",
+  "quoteMint": "usdc",
+  "baseMint": "wsol",
   "orderType": "buy",
   "rfqSize": "fixed-base",
   "rfqExpiry": 3600,

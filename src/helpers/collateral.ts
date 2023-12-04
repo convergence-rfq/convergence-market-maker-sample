@@ -17,6 +17,7 @@ export async function getCollateralAccount() {
     }
 
     const apiUrl = `${baseUrl}collateral?address=${walletAddress}`;
+
     // Make a GET request to the API
     const response = await axios.get(apiUrl);
     if (response.data.status === "success") {
@@ -46,9 +47,9 @@ export async function createCollateralAccount() {
       console.error("PUBLIC_KEY is not defined in the .env file.");
       process.exit(1);
     }
-    
+
     // airdrop before creating account
-    await airDropSol(walletAddress)
+    await airDropSol(walletAddress);
 
     // Prepare the request body
     const requestBody = {

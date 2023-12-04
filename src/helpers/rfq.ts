@@ -1,5 +1,6 @@
 import axios from "axios";
 import { getAddressByTokenName } from "./utils";
+import { calcCollateral, getUserBalances } from "./sdk-helper";
 
 export async function getRFQs(getRFQJsonData: any) {
   try {
@@ -67,14 +68,26 @@ export async function createRFQ(createRFQJasonData: any) {
     const requestBody = {
       rfqType: createRFQJasonData.rfqType,
       amount: createRFQJasonData.amount,
-      quoteMint: getAddressByTokenName(createRFQJasonData?.quoteMint?.toLowerCase()),
-      baseMint: getAddressByTokenName(createRFQJasonData?.baseMint?.toLowerCase()),
+      quoteMint: getAddressByTokenName(
+        createRFQJasonData?.quoteMint?.toLowerCase(),
+      ),
+      baseMint: getAddressByTokenName(
+        createRFQJasonData?.baseMint?.toLowerCase(),
+      ),
       address: walletAddress,
       orderType: createRFQJasonData.orderType,
       rfqSize: createRFQJasonData.rfqSize,
       rfqExpiry: createRFQJasonData.rfqExpiry,
       settlementWindow: createRFQJasonData.settlementWindow,
     };
+
+    const balances = await getUserBalances(process.env.PRIVATE_KEY || "");
+    const reqCollateral = await calcCollateral(requestBody);
+
+    if (balances?.freeCollateral < reqCollateral?.requiredCollateral) {
+      console.error("Low collateral balance, please add collateral first");
+      process.exit(1);
+    }
 
     // Make a POST request to the API
     const response = await axios.post(apiUrl, requestBody);

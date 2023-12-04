@@ -4,8 +4,9 @@
 
 ## Using
 
-Add environment variables in .env file.
-You may also need to update JSON files in the 'api-input' folder in order to create an RFQ.
+Rename the file "env.example" to ".env".
+Add both public and private keys to the ".env" file.
+Update the JSON files in the 'api-input' folder to create the desired RFQ.
 
 Install dependencies by running
 
@@ -38,7 +39,7 @@ get-instruments
 get-orders
 get-order
 cancel-orders
-cancel-orders
+cancel-order
 respond-order
 
 get-rfqs

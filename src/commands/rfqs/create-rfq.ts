@@ -51,7 +51,7 @@ function validateRfqSize(value: string) {
   const rfqSize = ["fixed-base", "fixed-quote", "open"];
   if (!rfqSize.includes(value)) {
     console.error(
-      `Invalid RFQ size. Allowed values are: ${rfqSize.map(x => x)}`,
+      `Invalid RFQ size. Allowed values are: ${rfqSize.map((x) => x)}`,
     );
     process.exit(1);
   }
@@ -82,22 +82,24 @@ function validateSolanaPublicKey(address: string, arg: string) {
 
 function validateMintAddress(baseMint: string, quoteMint: string) {
   if (baseMint.toLowerCase() === quoteMint.toLowerCase()) {
-    console.error(
-      `Base and quote mints can not be same.`,
-    );
+    console.error(`Base and quote mints can not be same.`);
     process.exit(1);
   }
 
-  const allowedTokens = ['msol', 'wsol', 'btc', 'usdc']
+  const allowedTokens = ["msol", "wsol", "btc", "usdc"];
   if (!allowedTokens.includes(baseMint.toLowerCase())) {
     console.error(
-      `Invalid base mint: ${baseMint}, allowed [${allowedTokens.map(x => x)}]`,
+      `Invalid base mint: ${baseMint}, allowed [${allowedTokens.map(
+        (x) => x,
+      )}]`,
     );
     process.exit(1);
   }
   if (!allowedTokens.includes(quoteMint.toLowerCase())) {
     console.error(
-      `Invalid quote mint: ${quoteMint}, allowed [${allowedTokens.map(x => x)}]`,
+      `Invalid quote mint: ${quoteMint}, allowed [${allowedTokens.map(
+        (x) => x,
+      )}]`,
     );
     process.exit(1);
   }

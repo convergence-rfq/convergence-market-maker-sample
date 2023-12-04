@@ -14,44 +14,52 @@ export const addCollateralFundCommand = new Command("add-collateral")
       output: process.stdout,
     });
 
-    rl.question("Enter the amount to add as collateral: ", async (amount) => {
-      try {
-        const addFund = {
-          amount: "0",
-        };
-        addFund.amount = amount;
+    async function promptForAmount() {
+      rl.question("Enter the amount to add as collateral: ", async (amount) => {
+        try {
+          const addFund = {
+            amount: "0",
+          };
+          addFund.amount = amount;
 
-        const collateralAccount = await getCollateralAccount();
-        if (!collateralAccount) {
-          console.log("No collateral account found, please create first");
-          return;
+          const collateralAccount = await getCollateralAccount();
+          if (!collateralAccount) {
+            console.log("No collateral account found, please create first");
+            return;
+          }
+
+          // validating file inputs
+          if (validateInputs(addFund)) {
+            const base64Tx = await addCollateralFund(addFund);
+            const signature = await broadcastTransaction(base64Tx);
+
+            console.log("Fund added successfully");
+            console.log("Tx signature =>", signature);
+            rl.close();
+          } else {
+            // If validation fails, prompt again
+            await promptForAmount();
+          }
+        } catch (error: any) {
+          console.error("An error occurred:", error);
+          rl.close();
         }
+      });
+    }
 
-        // validating file inputs
-        validateInputs(addFund);
-
-        const base64Tx = await addCollateralFund(addFund);
-        const signature = await broadcastTransaction(base64Tx);
-
-        console.log("Fund added successfully");
-        console.log("Tx signature =>", signature);
-      } catch (error: any) {
-        console.error("An error occurred:", error);
-      } finally {
-        rl.close();
-      }
-    });
+    // Start the prompt
+    await promptForAmount();
   });
 
 function validateInputs(data: any) {
-  validateAmount(data.amount);
+  return validateAmount(data.amount);
 }
 
 function validateAmount(value: string) {
   const amount = parseFloat(value);
   if (isNaN(amount) || amount <= 0) {
     console.error("Invalid amount. Amount must be a positive number.");
-    process.exit(1);
+    return false;
   }
-  return amount;
+  return true;
 }

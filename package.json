@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "npx tsc",
+    "exec": "node dist/index.js",
     "format": "prettier --write .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

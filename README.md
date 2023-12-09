@@ -1,13 +1,13 @@
 # CLI Sample
 
-This sample market maker script has been built around RFQ RESTful APIs.
+This sample market maker script has been built with Convergence RFQ REST APIs.
 
-## Using
+## How to Use
 
 1. **Clone the repository to your local drive.**
 
    ```
-   https://github.com/convergence-rfq/convergence-market-maker-sample.git
+   git clone https://github.com/convergence-rfq/convergence-market-maker-sample.git
    ```
 
 2. **Rename the file "env.example" to ".env".**

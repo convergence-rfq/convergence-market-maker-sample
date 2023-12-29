@@ -1,6 +1,11 @@
 import axios from "axios";
-import { getAddressByTokenName } from "./utils";
-import { calcCollateral, getUserBalances } from "./sdk-helper";
+import {
+  calcCollateral,
+  createCvg,
+  getKeypair,
+  getUserBalances,
+  initializeCollateralAccount,
+} from "./sdk-helper";
 
 export async function getRFQs(getRFQJsonData: any) {
   try {
@@ -55,6 +60,11 @@ export async function createRFQ(createRFQJasonData: any) {
       console.error("PUBLIC_KEY is not defined in the .env file.");
       process.exit(1);
     }
+    const privateKeyBase58 = process.env.PRIVATE_KEY;
+    if (!walletAddress) {
+      console.error("PRIVATE_KEY is not defined in the .env file.");
+      process.exit(1);
+    }
 
     const baseUrl = process.env.BASE_URL;
     if (!baseUrl) {
@@ -68,12 +78,8 @@ export async function createRFQ(createRFQJasonData: any) {
     const requestBody = {
       rfqType: createRFQJasonData.rfqType,
       amount: createRFQJasonData.amount,
-      quoteMint: getAddressByTokenName(
-        createRFQJasonData?.quoteMint?.toLowerCase(),
-      ),
-      baseMint: getAddressByTokenName(
-        createRFQJasonData?.baseMint?.toLowerCase(),
-      ),
+      quoteMint: createRFQJasonData?.quoteMint,
+      baseMint: createRFQJasonData?.baseMint,
       address: walletAddress,
       orderType: createRFQJasonData.orderType,
       rfqSize: createRFQJasonData.rfqSize,
@@ -82,10 +88,32 @@ export async function createRFQ(createRFQJasonData: any) {
     };
 
     const balances = await getUserBalances(process.env.PRIVATE_KEY || "");
+
+    if (balances?.balances?.dSOL?.tokenBalance === 0) {
+      console.error("Low SOL balance, please deposite first");
+      process.exit(1);
+    }
+    //@ts-ignore
+    if (balances?.balances?.USDC?.tokenBalance === 0) {
+      console.error("Low USDC balance, please deposite first.");
+      process.exit(1);
+    }
+
+    const user = getKeypair(privateKeyBase58 || "");
+    const cvg = await createCvg(user);
+
+    if (!balances.collateralAccount) {
+      await initializeCollateralAccount(cvg, user);
+    }
+
     const reqCollateral = await calcCollateral(requestBody);
 
     if (balances?.freeCollateral < reqCollateral?.requiredCollateral) {
-      console.error("Low collateral balance, please add collateral first");
+      console.error(
+        `Low collateral balance, please add at least ${reqCollateral?.requiredCollateral.toFixed(
+          5,
+        )} collateral first`,
+      );
       process.exit(1);
     }
 

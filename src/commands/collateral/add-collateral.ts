@@ -1,6 +1,7 @@
 import { Command } from "commander";
 import {
   addCollateralFund,
+  createCollateralAccount,
   getCollateralAccount,
 } from "../../helpers/collateral";
 import { broadcastTransaction } from "../../helpers/utils";
@@ -24,8 +25,8 @@ export const addCollateralFundCommand = new Command("add-collateral")
 
           const collateralAccount = await getCollateralAccount();
           if (!collateralAccount) {
-            console.log("No collateral account found, please create first");
-            return;
+            // if no collateral account found, setup new one
+            await createCollateralAccount();
           }
 
           // validating file inputs

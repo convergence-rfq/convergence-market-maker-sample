@@ -157,18 +157,20 @@ export const getKeypair = (privateKey: string) => {
 };
 
 export const createCvg = async (user: Keypair): Promise<Convergence> => {
-  const cvg = new Convergence(
-    new Connection(
-      process.env.RPC_URL ||
-        "https://muddy-white-morning.solana-devnet.quiknode.pro/637131a6924513d7c83c65efc75e55a9ba2517e9/",
-      {
-        commitment: "confirmed",
-      },
-    ),
-    { skipPreflight: false },
-  );
+  const cvg = new Convergence(connection, { skipPreflight: false });
   cvg.use(keypairIdentity(user));
   return cvg;
+};
+
+export const initializeCollateralAccount = async (
+  cvg: Convergence,
+  keypair: Keypair,
+) => {
+  const newAccount = await cvg.collateral().initialize({
+    user: keypair,
+  });
+  console.log("New collateral account created", newAccount);
+  return newAccount;
 };
 
 export const getUserBalances = async (privateKeyBase58: string) => {
@@ -280,6 +282,7 @@ export const getUserBalances = async (privateKeyBase58: string) => {
     balances: tokenBalances,
     freeCollateral: total - collateralAccount?.lockedTokensAmount,
     total,
+    collateralAccount,
   };
 };
 

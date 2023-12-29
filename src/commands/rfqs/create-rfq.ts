@@ -2,6 +2,7 @@ import { Command } from "commander";
 import { PublicKey } from "@solana/web3.js";
 import { broadcastTransaction } from "../../helpers/utils";
 import { createRFQ } from "../../helpers/rfq";
+import { getUserBalances } from "../../helpers/sdk-helper";
 const createRFQJasonData = require("../../../api-inputs/create-rfq.json");
 
 export const createRfqCommand = new Command("create-rfq")
@@ -14,7 +15,7 @@ export const createRfqCommand = new Command("create-rfq")
       }
 
       // validating file inputs
-      validateInputs(createRFQJasonData);
+      await validateInputs(createRFQJasonData);
 
       // creating base64 transaction
       const base64Tx = await createRFQ(createRFQJasonData);
@@ -80,13 +81,22 @@ function validateSolanaPublicKey(address: string, arg: string) {
   }
 }
 
-function validateMintAddress(baseMint: string, quoteMint: string) {
+async function validateMintAddress(baseMint: string, quoteMint: string) {
+  const res = await getUserBalances("");
+
+  const tokens = Object.keys(res.balances).map((key) => ({
+    //@ts-ignore
+    iconKey: res.balances[key].iconKey.toLowerCase(),
+    //@ts-ignore
+    mintAddress: res.balances[key].mintAddress,
+  }));
+
   if (baseMint.toLowerCase() === quoteMint.toLowerCase()) {
-    console.error(`Base and quote mints can not be same.`);
+    console.error(`Base and quote mints cannot be the same.`);
     process.exit(1);
   }
 
-  const allowedTokens = ["msol", "wsol", "btc", "usdc"];
+  const allowedTokens = tokens.map((x) => x.iconKey);
   if (!allowedTokens.includes(baseMint.toLowerCase())) {
     console.error(
       `Invalid base mint: ${baseMint}, allowed [${allowedTokens.map(
@@ -103,7 +113,36 @@ function validateMintAddress(baseMint: string, quoteMint: string) {
     );
     process.exit(1);
   }
+
+  // Find the token with the specified baseMint
+  const baseMintToken = tokens.find(
+    (token) => token.iconKey.toLowerCase() === baseMint.toLowerCase(),
+  );
+
+  if (!baseMintToken) {
+    console.error(`Token with baseMint ${baseMint} not found.`);
+    process.exit(1);
+  }
+
+  // Find the token with the specified quoteMint
+  const quoteMintToken = tokens.find(
+    (token) => token.iconKey.toLowerCase() === quoteMint.toLowerCase(),
+  );
+
+  if (!quoteMintToken) {
+    console.error(`Token with quoteMint ${quoteMint} not found.`);
+    process.exit(1);
+  }
+
+  // Return baseMint, quoteMint, iconKey, and mintAddress if found
+  return {
+    baseMint: baseMint.toLowerCase(),
+    baseMintAddress: baseMintToken.mintAddress,
+    quoteMint: quoteMint.toLowerCase(),
+    quoteMintAddress: quoteMintToken.mintAddress,
+  };
 }
+
 function validateTime(value: string, arg: string) {
   const amount = parseFloat(value);
   if (isNaN(amount) || amount <= 0) {
@@ -115,12 +154,14 @@ function validateTime(value: string, arg: string) {
   return amount;
 }
 
-function validateInputs(data: any) {
+async function validateInputs(data: any) {
   validateRfqType(data.rfqType);
   validateOrderType(data.orderType);
   validateRfqSize(data.rfqSize);
   validateAmount(data.amount);
-  validateMintAddress(data.baseMint, data.quoteMint);
+  const res = await validateMintAddress(data.baseMint, data.quoteMint);
+  data.baseMint = res.baseMintAddress;
+  data.quoteMint = res.quoteMintAddress;
   validateTime(data.rfqExpiry, "rfqExpiry");
   validateTime(data.settlementWindow, "settlementWindow");
 }

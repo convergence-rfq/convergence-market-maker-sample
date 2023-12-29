@@ -1,5 +1,6 @@
 import axios from "axios";
 import { airDropSol } from "./utils";
+import { getUserBalances } from "./sdk-helper";
 
 export async function getCollateralAccount() {
   try {
@@ -48,8 +49,22 @@ export async function createCollateralAccount() {
       process.exit(1);
     }
 
-    // airdrop before creating account
-    await airDropSol(walletAddress);
+    const balances = await getUserBalances(process.env.PRIVATE_KEY || "");
+
+    if (balances?.balances?.dSOL?.tokenBalance === 0) {
+      if (process.env.NODE_ENV === "devnet") {
+        // airdrop before creating account
+        await airDropSol(walletAddress);
+      } else {
+        console.error("Low SOL balance, please deposite first");
+        process.exit(1);
+      }
+    }
+    //@ts-ignore
+    if (balances?.balances?.USDC?.tokenBalance === 0) {
+      console.error("Low USDC balance, please deposite first.");
+      process.exit(1);
+    }
 
     // Prepare the request body
     const requestBody = {

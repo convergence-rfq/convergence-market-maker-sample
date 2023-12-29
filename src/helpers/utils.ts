@@ -40,7 +40,7 @@ export const broadcastTransaction = async (base64Response: string) => {
       Keypair.fromSecretKey(privateKeyBytes),
     ]);
   } catch (error) {
-    console.error("Error decoding private key:", error);
+    console.error("Error broadcastTransaction:", error);
     process.exit(1);
   }
 };
@@ -53,9 +53,7 @@ export const airDropSol = async (publicKey: string) => {
     );
     console.log("air drop signature", airdropSignature);
   } catch (error) {
-    console.error(
-      "Error while solana airdrip, trying with registerNewSolanaAddress method",
-    );
+    // Error while solana airdrip, trying with registerNewSolanaAddress method
     await registerNewSolanaAddress();
   }
 };

@@ -16,7 +16,9 @@ export const getCollateralCommand = new Command("get-collateral-account")
       const { freeCollateral } = await getUserBalances(
         process.env.PRIVATE_KEY || "",
       );
-      Object.assign(collateralAccount, { freeTokenAmount: freeCollateral });
+      Object.assign(collateralAccount, {
+        freeTokenAmount: freeCollateral || 0,
+      });
       console.log("Collateral account:", collateralAccount);
     } catch (error: any) {
       console.error("An error occurred:", error);

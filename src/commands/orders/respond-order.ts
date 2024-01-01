@@ -19,7 +19,7 @@ export const respondOrderCommand = new Command("respond-order")
           // Broadcasting transaction on chain
           const signature = await broadcastTransaction(base64Tx);
 
-          console.log("Order canceled. Transaction signature:", signature);
+          console.log("Order responded. Transaction signature:", signature);
         } catch (error: any) {
           console.error("An error occurred:", error);
         } finally {

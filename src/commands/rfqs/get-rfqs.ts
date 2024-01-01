@@ -1,26 +1,45 @@
 import { Command } from "commander";
 import { PublicKey } from "@solana/web3.js";
 import { getRFQs } from "../../helpers/rfq";
+import readline from "readline";
 const getRFQJsonData = require("../../../api-inputs/get-rfqs.json");
 
 export const getRfqsCommand = new Command("get-rfqs")
   .description("Get RFQs by wallet address")
   .action(async () => {
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout,
+    });
     try {
       if (!getRFQJsonData) {
         console.error("Please provide get RFQs api-input Json file");
         return;
       }
 
-      // validating file inputs
-      validateInputs(getRFQJsonData);
+      // Ask the user if they want only their RFQs
+      rl.question("Do you want only My RFQs? (Yes/No): ", async (answer) => {
+        if (answer.toLowerCase() === "yes" || answer.toLowerCase() === "y") {
+          // User wants only their RFQs
+          getRFQJsonData.onlyMyRFQs = true;
+        } else {
+          // User wants all RFQs
+          getRFQJsonData.onlyMyRFQs = false;
+        }
 
-      // Get the BASE_URL from environment variables
+        // validating file inputs
+        validateInputs(getRFQJsonData);
 
-      const rfqs = await getRFQs(getRFQJsonData);
-      console.log("RFQs =>", rfqs);
+        // Get the BASE_URL from environment variables
+        const rfqs = await getRFQs(getRFQJsonData);
+        console.log("RFQs =>", rfqs);
+
+        // Close the readline interface
+        rl.close();
+      });
     } catch (error: any) {
       console.error("An error occurred:", error);
+      rl.close(); // Make sure to close the readline interface in case of an error
     }
   });
 

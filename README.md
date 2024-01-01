@@ -65,7 +65,7 @@ respond-order
 get-rfqs
 create-rfq
 get-rfq-orders
-confirm-order
+confirm-rfq-order
 ```
 
 ## How to create RFQ
@@ -82,4 +82,34 @@ $ npm run exec -- add-collateral
 
 ```
 $ npm run exec -- create-rfq
+```
+
+## How to Respond RFQ
+
+1. Run the get-rfqs command to retrieve a list of RFQs. The command will prompt you to choose between your RFQs or all RFQs. Select "all."
+
+```
+$ npm run exec -- get-rfqs
+```
+
+2. Copy the public address of the RFQ to which you want to respond.
+3. Execute the respond-order command, which will prompt you to provide the public key of the RFQ and the total amount of USDC you intend to spend.
+
+```
+$ npm run exec -- respond-order
+```
+
+## How to confrim RFQ response
+
+1. Before confirming any response, you must have the RFQ and response public keys. Retrieve the response public key by running the following command:
+
+```
+$ npm run exec -- get-rfq-orders
+```
+
+2. Copy the response public address that you want to confirm.
+3. Execute the confirm-order command. It will prompt you to enter the RFQ and response addresses, and it will confirm the response.
+
+```
+$ npm run exec -- confirm-rfq-order
 ```

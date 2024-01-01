@@ -9,12 +9,6 @@ import {
 
 export async function getRFQs(getRFQJsonData: any) {
   try {
-    const walletAddress = process.env.PUBLIC_KEY;
-    if (!walletAddress) {
-      console.error("PUBLIC_KEY is not defined in the .env file.");
-      process.exit(1);
-    }
-
     const baseUrl = process.env.BASE_URL;
     if (!baseUrl) {
       console.error("BASE_URL is not defined in the .env file.");
@@ -33,11 +27,12 @@ export async function getRFQs(getRFQJsonData: any) {
       queryParams.push(`paginationToken=${getRFQJsonData.paginationToken}`);
     if (getRFQJsonData.rfqAccountAddress)
       queryParams.push(`rfqAccountAddress=${getRFQJsonData.rfqAccountAddress}`);
-
+    if (getRFQJsonData.onlyMyRFQs)
+      queryParams.push(`address=${process.env.PUBLIC_KEY}`);
     // Construct the query string
     const queryString = queryParams.join("&");
 
-    const apiUrl = `${baseUrl}rfqs?address=${walletAddress}&${queryString}`;
+    const apiUrl = `${baseUrl}rfqs?${queryString}`;
 
     // Make a GET request to the API
     const response = await axios.get(apiUrl);

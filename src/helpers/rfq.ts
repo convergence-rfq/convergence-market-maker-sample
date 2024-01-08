@@ -6,8 +6,10 @@ import {
   getUserBalances,
   initializeCollateralAccount,
 } from "./sdk-helper";
+import { IGetRFQ } from "../commands/rfqs/get-rfqs";
+import { ICreateRFQ } from "../commands/rfqs/create-rfq";
 
-export async function getRFQs(getRFQJsonData: any) {
+export async function getRFQs(getRFQJsonData: IGetRFQ) {
   try {
     const baseUrl = process.env.BASE_URL;
     if (!baseUrl) {
@@ -19,8 +21,10 @@ export async function getRFQs(getRFQJsonData: any) {
     const queryParams: string[] = [];
 
     // Add parameters with values to the array if they are defined
-    if (getRFQJsonData.page) queryParams.push(`page=${getRFQJsonData.page}`);
-    if (getRFQJsonData.limit) queryParams.push(`limit=${getRFQJsonData.limit}`);
+    if (getRFQJsonData.page > 0)
+      queryParams.push(`page=${getRFQJsonData.page}`);
+    if (getRFQJsonData.limit > 0)
+      queryParams.push(`limit=${getRFQJsonData.limit}`);
     if (getRFQJsonData.instrument)
       queryParams.push(`instrument=${getRFQJsonData.instrument}`);
     if (getRFQJsonData.paginationToken)
@@ -29,6 +33,7 @@ export async function getRFQs(getRFQJsonData: any) {
       queryParams.push(`rfqAccountAddress=${getRFQJsonData.rfqAccountAddress}`);
     if (getRFQJsonData.onlyMyRFQs)
       queryParams.push(`address=${process.env.PUBLIC_KEY}`);
+
     // Construct the query string
     const queryString = queryParams.join("&");
 
@@ -48,7 +53,7 @@ export async function getRFQs(getRFQJsonData: any) {
   }
 }
 
-export async function createRFQ(createRFQJasonData: any) {
+export async function createRFQ(createRFQJasonData: ICreateRFQ) {
   try {
     const walletAddress = process.env.PUBLIC_KEY;
     if (!walletAddress) {

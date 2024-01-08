@@ -2,7 +2,15 @@ import { Command } from "commander";
 import { PublicKey } from "@solana/web3.js";
 import { getRFQs } from "../../helpers/rfq";
 import readline from "readline";
-const getRFQJsonData = require("../../../api-inputs/get-rfqs.json");
+
+export interface IGetRFQ {
+  page: number;
+  limit: number;
+  instrument: string;
+  paginationToken: string;
+  rfqAccountAddress: string;
+  onlyMyRFQs: boolean;
+}
 
 export const getRfqsCommand = new Command("get-rfqs")
   .description("Get RFQs by wallet address")
@@ -11,101 +19,154 @@ export const getRfqsCommand = new Command("get-rfqs")
       input: process.stdin,
       output: process.stdout,
     });
+
+    const getRfq: IGetRFQ = {
+      page: 0,
+      limit: 0,
+      instrument: "",
+      paginationToken: "",
+      rfqAccountAddress: "",
+      onlyMyRFQs: false,
+    };
+
     try {
-      if (!getRFQJsonData) {
-        console.error("Please provide get RFQs api-input Json file");
-        return;
-      }
+      // Ask the user if they want to specify a specific RFQ
+      rl.question(
+        "Do you want to get a specific RFQ? Enter public key or press Enter to continue: ",
+        async (publicKey) => {
+          if (publicKey.trim()) {
+            // If the user entered a public key, validate it
+            while (!validatePublicKey(publicKey)) {
+              publicKey = await askForValidInput(
+                "Enter a valid RFQ public key: ",
+              );
+            }
 
-      // Ask the user if they want only their RFQs
-      rl.question("Do you want only My RFQs? (Yes/No): ", async (answer) => {
-        if (answer.toLowerCase() === "yes" || answer.toLowerCase() === "y") {
-          // User wants only their RFQs
-          getRFQJsonData.onlyMyRFQs = true;
-        } else {
-          // User wants all RFQs
-          getRFQJsonData.onlyMyRFQs = false;
-        }
+            // If the user entered a specific RFQ address
+            getRfq.rfqAccountAddress = publicKey.trim();
 
-        // validating file inputs
-        validateInputs(getRFQJsonData);
+            // Skip all questions and validations, directly call getRFQs
+            const rfqs = await getRFQs(getRfq);
+            console.log("RFQs =>", rfqs);
 
-        // Get the BASE_URL from environment variables
-        const rfqs = await getRFQs(getRFQJsonData);
-        console.log("RFQs =>", rfqs);
+            // Close the readline interface
+            rl.close();
+          } else {
+            // User wants all RFQs
+            getRfq.onlyMyRFQs = await askForValidBoolean(
+              "Do you want only own RFQs? (Yes/No): ",
+            );
 
-        // Close the readline interface
-        rl.close();
-      });
+            // Ask for page limit
+            getRfq.limit = await askForValidInteger(
+              "Please enter page limit: ",
+            );
+
+            // Ask for page number
+            getRfq.page = await askForValidInteger(
+              "Please enter page number: ",
+            );
+
+            // Ask for pagination token
+            getRfq.paginationToken = await askForValidInput(
+              "If you have a pagination token, enter it, otherwise leave it empty: ",
+            );
+
+            // Ask for instrument
+            getRfq.instrument = await askForValidInstrument(
+              "If you want to enter instrumet, enter it [spot, options], otherwise leave it empty: ",
+            );
+
+            // Get the BASE_URL from environment variables
+            const rfqs = await getRFQs(getRfq);
+            console.log("RFQs =>", rfqs);
+
+            // Close the readline interface
+            rl.close();
+          }
+        },
+      );
     } catch (error: any) {
       console.error("An error occurred:", error);
       rl.close(); // Make sure to close the readline interface in case of an error
     }
   });
 
-function validateInputs(data: any) {
-  const { page, limit, instrument, rfqAccountAddress, paginationToken } = data;
-
-  if (page && !isPositive(page)) {
-    console.error(
-      "Invalid page number. Allowed values are: [positive numbers]",
-    );
-    process.exit(1);
-  }
-  if (limit && !isPositive(limit)) {
-    console.error(
-      "Invalid limit number. Allowed values are: [positive numbers]",
-    );
-    process.exit(1);
-  }
-  if (instrument && !validateInstrument(instrument)) {
-    console.error(
-      "Invalid instrument. Allowed values are: [spot, options, all]",
-    );
-    process.exit(1);
-  }
-  if (
-    rfqAccountAddress &&
-    !validateSolanaPublicKey(rfqAccountAddress, "rfqAccountAddress")
-  ) {
-    console.error(
-      "Invalid rfqAccountAddress. Address must be valid solana public key.",
-    );
-    process.exit(1);
-  }
-  if (paginationToken && typeof paginationToken !== "string") {
-    console.error("Invalid paginationToken. Allowed values are: [string]");
-    process.exit(1);
-  }
-}
-
-function isPositive(value: string) {
-  const amount = parseFloat(value);
-  if (isNaN(amount) || amount <= 0) {
-    console.error("Invalid amount. Amount must be a positive number.");
-    process.exit(1);
-  }
-  return amount;
-}
-
-function validateInstrument(instrument: string): boolean {
+// Function to validate a public key
+function validatePublicKey(publicKey: string): boolean {
   try {
-    const validInstruments = ["spot", "options", "all"];
-    return validInstruments.includes(instrument.toLowerCase());
+    if (new PublicKey(publicKey)) {
+      return true;
+    }
+    return false;
   } catch (ex) {
     return false;
   }
 }
 
-function validateSolanaPublicKey(address: string, arg: string) {
-  try {
-    if (new PublicKey(address)) {
-      return address;
+// Function to ask the user for a valid input
+async function askForValidInput(prompt: string): Promise<string> {
+  return new Promise<string>((resolve) => {
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout,
+      terminal: false, // Set terminal to false to handle line endings correctly
+    });
+
+    rl.question(prompt, (input) => {
+      rl.close();
+      resolve(input.trim()); // Trim the input to remove leading/trailing whitespaces
+    });
+  });
+}
+
+// Function to ask the user for a valid integer input
+async function askForValidInteger(prompt: string): Promise<number> {
+  return new Promise<number>(async (resolve) => {
+    let input = await askForValidInput(prompt);
+
+    // Validate integer input
+    while (!Number.isInteger(Number(input))) {
+      console.error("Error: Please enter a valid integer.");
+      // Ask again for a valid integer input
+      input = await askForValidInput("Enter a valid integer: ");
     }
-  } catch (ex) {
-    console.error(
-      `Invalid ${arg} address: Address must be valid solana public key.`,
-    );
-    process.exit(1);
-  }
+
+    resolve(Number(input));
+  });
+}
+
+// Function to ask the user for a yes/no input
+async function askForValidBoolean(prompt: string): Promise<boolean> {
+  return new Promise<boolean>(async (resolve) => {
+    let input = await askForValidInput(prompt);
+
+    // Validate boolean input
+    while (input.toLowerCase() !== "yes" && input.toLowerCase() !== "no") {
+      // Ask again for a valid input
+      input = await askForValidInput("Error! Enter Yes/No: ");
+    }
+
+    resolve(input.toLowerCase() === "yes");
+  });
+}
+
+// Function to ask the user for a instrument input
+async function askForValidInstrument(prompt: string): Promise<string> {
+  return new Promise<string>(async (resolve) => {
+    let input = await askForValidInput(prompt);
+
+    // Validate instrument input
+    while (
+      input.toLowerCase() !== "spot" &&
+      input.toLowerCase() !== "options"
+    ) {
+      // Ask again for a valid input
+      input = await askForValidInput(
+        "Error! Please enter valid instrument [spot, options]: ",
+      );
+    }
+
+    resolve(input.toLowerCase());
+  });
 }

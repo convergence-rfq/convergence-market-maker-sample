@@ -22,12 +22,6 @@ This sample market maker script has been built with Convergence RFQ REST APIs.
    # Add your public and private keys in the .env file
    ```
 
-4. **Update the JSON files in the 'api-input' folder to create the desired RFQ.**
-
-   ```bash
-   # Update the JSON files in the 'api-input' folder
-   ```
-
 Install dependencies by running
 
 ```
@@ -71,14 +65,13 @@ confirm-rfq-order
 ## How to create RFQ
 
 1. Before creating an RFQ, ensure that you have SOL and USDC in your wallet.
-2. Update the create-rfq.json file in the api-inputs folder located in the root directory.
-3. Add collateral to your account using the add-collateral command (minimum 20 USDC). If you haven't added collateral before, run the following command:
+2. Add collateral to your account using the add-collateral command (minimum 20 USDC). If you haven't added collateral before, run the following command:
 
 ```
 $ npm run exec -- add-collateral
 ```
 
-4. After adding collateral, you can now execute the create-rfq command:
+3. After adding collateral, you can now execute the create-rfq command:
 
 ```
 $ npm run exec -- create-rfq

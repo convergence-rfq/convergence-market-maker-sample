@@ -114,3 +114,32 @@ export const getAddressByTokenName = (tokenName: keyof TokenAddresses) => {
     return "Token not found";
   }
 };
+
+export interface ICreateRFQ {
+  rfqType: string;
+  amount: number;
+  quoteMint: string;
+  baseMint: string;
+  orderType: string;
+  rfqSize: string;
+  rfqExpiry: number;
+  settlementWindow: number;
+  strategyData: IStrategyData[];
+  optionStyle: string;
+}
+
+export interface IStrategyData {
+  baseAsset: string;
+  direction: boolean;
+  id: string;
+  instrument: string;
+  legNumber: number;
+  mintedInstrument: null;
+  oracle: number;
+  quantity: number;
+  quoteAsset: string;
+  screen: number;
+  size: number;
+  strike: number;
+  expiry: number;
+}

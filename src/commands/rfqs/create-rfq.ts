@@ -1,19 +1,13 @@
 import { Command } from "commander";
-import { broadcastTransaction } from "../../helpers/utils";
+import {
+  ICreateRFQ,
+  IStrategyData,
+  broadcastTransaction,
+} from "../../helpers/utils";
 import { createRFQ } from "../../helpers/rfq";
 import { getUserBalances } from "../../helpers/sdk-helper";
 import readline from "readline";
-
-export interface ICreateRFQ {
-  rfqType: string;
-  amount: number;
-  quoteMint: string;
-  baseMint: string;
-  orderType: string;
-  rfqSize: string;
-  rfqExpiry: number;
-  settlementWindow: number;
-}
+const inquirer = require("inquirer");
 
 export const createRfqCommand = new Command("create-rfq")
   .description("Create a new RFQ")
@@ -27,44 +21,70 @@ export const createRfqCommand = new Command("create-rfq")
       rfqSize: "",
       rfqExpiry: 0,
       settlementWindow: 0,
+      strategyData: [],
+      optionStyle: "",
     };
+
     try {
-      // Ask for RFQ type and validate
-      createRFQData.rfqType = await askAndValidate(
-        "Enter RFQ type (spot/options): ",
-        ["spot", "options"],
-      );
+      // Ask for RFQ type using inquirer prompt
+      const rfqTypeAnswer = await inquirer.prompt({
+        type: "list",
+        name: "rfqType",
+        message: "Select RFQ type: ",
+        choices: ["spot", "options"],
+      });
+      createRFQData.rfqType = rfqTypeAnswer.rfqType;
+
+      // Ask for baseMint and validate
+      const tokens = await getSupportedTokens();
+      const baseMintAnswer = await inquirer.prompt({
+        type: "list",
+        name: "baseMint",
+        message: "Select Base mint: ",
+        choices: tokens.map(
+          (token) => `${token.iconKey} - ${token.mintAddress}`,
+        ),
+      });
+      createRFQData.baseMint = baseMintAnswer.baseMint.split("-")[0].trim();
+
+      // Ask for quoteMint and validate
+      const quoteMintAnswer = await inquirer.prompt({
+        type: "list",
+        name: "quoteMint",
+        message: "Select quote mint: ",
+        choices: ["usdc"],
+      });
+      createRFQData.quoteMint = quoteMintAnswer.quoteMint;
 
       // Ask for amount and validate
       createRFQData.amount =
         await askAndValidatePositiveNumber("Enter amount: ");
 
-      // Ask for quoteMint and validate
-      const quoteMint = await askAndValidate("Enter quote mint (usdc): ", [
-        "usdc",
-      ]);
-
-      // Ask for baseMint and validate
-      const baseMint = await askAndValidate(
-        "Enter base mint (msol, btc, sol): ",
-        ["msol", "btc", "sol"],
+      const supportedTokens = await validateMintAddress(
+        createRFQData.baseMint,
+        createRFQData.quoteMint,
+        tokens,
       );
-
-      const supportedTokens = await validateMintAddress(baseMint, quoteMint);
       createRFQData.quoteMint = supportedTokens.quoteMintAddress;
       createRFQData.baseMint = supportedTokens.baseMintAddress;
 
       // Ask for orderType and validate
-      createRFQData.orderType = await askAndValidate(
-        "Enter order type (buy, sell, 2-way): ",
-        ["buy", "sell", "2-way"],
-      );
+      const orderTypeAnswer = await inquirer.prompt({
+        type: "list",
+        name: "orderType",
+        message: "Select order type: ",
+        choices: ["buy", "sell", "2-way"],
+      });
+      createRFQData.orderType = orderTypeAnswer.orderType;
 
       // Ask for rfqSize and validate
-      createRFQData.rfqSize = await askAndValidate(
-        "Enter RFQ size (fixed-base, fixed-quote, open): ",
-        ["fixed-base", "fixed-quote", "open"],
-      );
+      const rfqSizeAnswer = await inquirer.prompt({
+        type: "list",
+        name: "rfqSize",
+        message: "Select RFQ size: ",
+        choices: ["fixed-base", "fixed-quote", "open"],
+      });
+      createRFQData.rfqSize = rfqSizeAnswer.rfqSize;
 
       // Ask for rfqExpiry time and validate
       createRFQData.rfqExpiry = await askAndValidatePositiveNumber(
@@ -73,41 +93,99 @@ export const createRfqCommand = new Command("create-rfq")
 
       // Ask for settlementWindow time and validate
       createRFQData.settlementWindow = await askAndValidatePositiveNumber(
-        "Enter settlement window time in seconds (120 = 2min): ",
+        "Enter settlement window time in seconds (60 = 1min): ",
       );
 
+      // If rfqType is "options," ask for IStrategyData
+      if (createRFQData.rfqType === "options") {
+        // Ask for rfqSize and validate
+        const optionStyleAnswer = await inquirer.prompt({
+          type: "list",
+          name: "optionStyle",
+          message: "Select style: ",
+          choices: ["american", "european"],
+        });
+        createRFQData.optionStyle = optionStyleAnswer.optionStyle;
+
+        let addAnotherStrategy = true;
+        while (addAnotherStrategy) {
+          const directionAnswer = await inquirer.prompt({
+            type: "list",
+            name: "direction",
+            message: "Select direction: ",
+            choices: ["short", "long"],
+          });
+          const direction = directionAnswer.direction;
+
+          const instrumentAnswer = await inquirer.prompt({
+            type: "list",
+            name: "instrument",
+            message: "Select instrument: ",
+            choices: ["put", "call"],
+          });
+          const instrument = instrumentAnswer.instrument;
+
+          // Ask for IStrategyData fields and validate
+          const strategyData: IStrategyData = {
+            baseAsset: supportedTokens.baseMint.toUpperCase(),
+            quoteAsset: supportedTokens.quoteMint.toUpperCase(),
+            direction: direction === "long" ? true : false,
+            instrument: instrument.toUpperCase(),
+            screen: await askAndValidatePositiveNumber("Enter screen price: "),
+            strike: await askAndValidatePositiveNumber("Enter strike price: "),
+            expiry: 0,
+            quantity: await askAndValidatePositiveNumber("Enter quantity: "),
+            size: await askAndValidatePositiveNumber("Enter size: "),
+            id: `data-${createRFQData.strategyData.length + 1}`,
+            legNumber: createRFQData.strategyData.length + 1,
+            mintedInstrument: null,
+            oracle: 0,
+          };
+
+          // Calculating leg expiry dates and timestamps
+          const dates = getNextNFridaysTimestamps(5);
+          const legExpirtyAnswer = await inquirer.prompt({
+            type: "list",
+            name: "instrument",
+            message: "Select leg expiry date: ",
+            choices: dates.map((x) => x.date),
+          });
+          strategyData.expiry =
+            dates.find((x) => x.date == legExpirtyAnswer.instrument)
+              ?.timestamp || 0;
+
+          // Add IStrategyData to the strategyData array
+          createRFQData.strategyData.push(strategyData);
+
+          // Ask if the user wants to add another strategyData
+          const addAnotherStrategyAnswer = await inquirer.prompt({
+            type: "list",
+            name: "addAnotherStrategy",
+            message: "Add another strategy data? ",
+            choices: ["No", "Yes"],
+          });
+
+          addAnotherStrategy =
+            addAnotherStrategyAnswer.addAnotherStrategy === "Yes";
+        }
+      }
+
       // Creating base64 transaction
-      const base64Tx = await createRFQ(createRFQData);
-
-      // Broadcasting transaction on chain
-      const signature = await broadcastTransaction(base64Tx);
-
-      console.info("RFQ created successfully.", signature);
+      const base64Txs = await createRFQ(createRFQData);
+      if (createRFQData.rfqType === "spot") {
+        const signature = await broadcastTransaction(base64Txs);
+        console.info("Tx Signature.", signature);
+      } else {
+        for (const base64Tx of base64Txs) {
+          const signature = await broadcastTransaction(base64Tx);
+          console.info("Tx Signature.", signature);
+        }
+      }
     } catch (error: any) {
       console.error("An error occurred:", error);
       process.exit(1);
     }
   });
-
-// Function to ask the user for input and validate against an array of valid options
-async function askAndValidate(
-  prompt: string,
-  validOptions: string[],
-): Promise<string> {
-  return new Promise<string>(async (resolve) => {
-    let input = await askForValidInput(prompt);
-
-    // Validate input against valid options
-    while (!validOptions.includes(input.toLowerCase())) {
-      // Ask again for a valid input
-      input = await askForValidInput(
-        `Error! Enter a valid option (${validOptions.join("/")}): `,
-      );
-    }
-
-    resolve(input.toLowerCase());
-  });
-}
 
 // Function to ask the user for a positive number input
 async function askAndValidatePositiveNumber(prompt: string): Promise<number> {
@@ -140,16 +218,11 @@ async function askForValidInput(prompt: string): Promise<string> {
   });
 }
 
-async function validateMintAddress(baseMint: string, quoteMint: string) {
-  const res = await getUserBalances("");
-
-  const tokens = Object.keys(res.balances).map((key) => ({
-    //@ts-ignore
-    iconKey: res.balances[key].iconKey.toLowerCase(),
-    //@ts-ignore
-    mintAddress: res.balances[key].mintAddress,
-  }));
-
+async function validateMintAddress(
+  baseMint: string,
+  quoteMint: string,
+  tokens: any[],
+) {
   if (baseMint.toLowerCase() === quoteMint.toLowerCase()) {
     console.error(`Base and quote mints cannot be the same.`);
     process.exit(1);
@@ -200,4 +273,48 @@ async function validateMintAddress(baseMint: string, quoteMint: string) {
     quoteMint: quoteMint.toLowerCase(),
     quoteMintAddress: quoteMintToken.mintAddress,
   };
+}
+
+async function getSupportedTokens() {
+  const res = await getUserBalances("");
+  const tokens = Object.keys(res.balances).map((key) => ({
+    //@ts-ignore
+    iconKey: res.balances[key].iconKey.toLowerCase(),
+    //@ts-ignore
+    mintAddress: res.balances[key].mintAddress,
+  }));
+  return tokens;
+}
+
+function getNextNFridaysTimestamps(n: number) {
+  const currentDate = new Date();
+  const fridayTimestamps = [];
+
+  for (let i = 0; i < n; i++) {
+    // Calculate days until the next Friday (5 = Friday)
+    const daysUntilNextFriday = ((5 - currentDate.getDay() + 7) % 7) + i * 7;
+
+    // Set time to 8:00 PM local time
+    const nextFriday = new Date(currentDate);
+
+    nextFriday.setDate(currentDate.getDate() + daysUntilNextFriday);
+    nextFriday.setHours(20, 0, 0, 0);
+
+    // Format date as desired (15-Dec-2023)
+    const formattedNextFriday = `${nextFriday.getFullYear()}-${(
+      nextFriday.getMonth() + 1
+    )
+      .toString()
+      .padStart(2, "0")}-${nextFriday.getDate().toString().padStart(2, "0")}`;
+
+    const fridayDate = new Date(`${formattedNextFriday}T08:00:00.000Z`);
+    const fridayTimestampInSeconds = Math.floor(fridayDate.getTime() / 1000);
+
+    fridayTimestamps.push({
+      date: formattedNextFriday,
+      timestamp: fridayTimestampInSeconds,
+    });
+  }
+
+  return fridayTimestamps;
 }

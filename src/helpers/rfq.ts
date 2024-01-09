@@ -7,7 +7,7 @@ import {
   initializeCollateralAccount,
 } from "./sdk-helper";
 import { IGetRFQ } from "../commands/rfqs/get-rfqs";
-import { ICreateRFQ } from "../commands/rfqs/create-rfq";
+import { ICreateRFQ } from "./utils";
 
 export async function getRFQs(getRFQJsonData: IGetRFQ) {
   try {
@@ -53,7 +53,7 @@ export async function getRFQs(getRFQJsonData: IGetRFQ) {
   }
 }
 
-export async function createRFQ(createRFQJasonData: ICreateRFQ) {
+export async function createRFQ(createRFQData: ICreateRFQ) {
   try {
     const walletAddress = process.env.PUBLIC_KEY;
     if (!walletAddress) {
@@ -76,15 +76,17 @@ export async function createRFQ(createRFQJasonData: ICreateRFQ) {
 
     // Prepare the request body
     const requestBody = {
-      rfqType: createRFQJasonData.rfqType,
-      amount: createRFQJasonData.amount,
-      quoteMint: createRFQJasonData?.quoteMint,
-      baseMint: createRFQJasonData?.baseMint,
+      rfqType: createRFQData.rfqType,
+      amount: createRFQData.amount,
+      quoteMint: createRFQData?.quoteMint,
+      baseMint: createRFQData?.baseMint,
       address: walletAddress,
-      orderType: createRFQJasonData.orderType,
-      rfqSize: createRFQJasonData.rfqSize,
-      rfqExpiry: createRFQJasonData.rfqExpiry,
-      settlementWindow: createRFQJasonData.settlementWindow,
+      orderType: createRFQData.orderType,
+      rfqSize: createRFQData.rfqSize,
+      rfqExpiry: createRFQData.rfqExpiry,
+      settlementWindow: createRFQData.settlementWindow,
+      strategyData: createRFQData.strategyData,
+      optionStyle: createRFQData.optionStyle,
     };
 
     const balances = await getUserBalances(process.env.PRIVATE_KEY || "");

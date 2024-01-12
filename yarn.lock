@@ -91,10 +91,10 @@
     bn.js "^5.2.0"
     debug "^4.3.3"
 
-"@convergence-rfq/psyoptions-american-instrument@2.3.0":
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/@convergence-rfq/psyoptions-american-instrument/-/psyoptions-american-instrument-2.3.0.tgz#b97934de1ca09b481c097e494f60c2827546cdfa"
-  integrity sha512-twUtMt8CJw8IV2uFkGGffElmsr25Jw5nlEfCPl+68oH5jKzN2BLq6ovp31KKPwFySfOeQPNH9uDp56fxUJMJ/g==
+"@convergence-rfq/psyoptions-american-instrument@2.3.2":
+  version "2.3.2"
+  resolved "https://registry.yarnpkg.com/@convergence-rfq/psyoptions-american-instrument/-/psyoptions-american-instrument-2.3.2.tgz#b28b86e36f583b5a1302f8d7333fb565a1ac548f"
+  integrity sha512-ZXli5iCq6DxIl5RYVGJjSLKnB2PoD5VlTkL5c/IPO90Pllhwiv0plkcPkbIUikb+UG068wpkF0Hx+N8jBExyfA==
   dependencies:
     "@convergence-rfq/beet" "^0.7.10"
     "@convergence-rfq/beet-solana" "^0.4.11"
@@ -102,10 +102,10 @@
     "@solana/web3.js" "^1.56.2"
     bn.js "^5.2.0"
 
-"@convergence-rfq/psyoptions-european-instrument@2.3.0":
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/@convergence-rfq/psyoptions-european-instrument/-/psyoptions-european-instrument-2.3.0.tgz#4ec96e3e62652fe9afd627164b6efeae36d8e579"
-  integrity sha512-bdMP1I+hLzmxbCBvrCSmDMmE9gtyH7LvS3jvk/vvuAPwe2XKDWKvdX8uKrC8ageleBNOHGojxh65zXRaNGe8bw==
+"@convergence-rfq/psyoptions-european-instrument@2.3.2":
+  version "2.3.2"
+  resolved "https://registry.yarnpkg.com/@convergence-rfq/psyoptions-european-instrument/-/psyoptions-european-instrument-2.3.2.tgz#ee8589bd5f2e0b246bd13d849933b2f401fbe35d"
+  integrity sha512-lKfQW2E2HMnzG1boqSNZvCkqNrQ7/dv8wPfcAfh+3V+Qesdl/ELkvmwgr5Z6QR+J7SZ0a42NEQpKE1/Ez9+Okw==
   dependencies:
     "@convergence-rfq/beet" "^0.7.10"
     "@convergence-rfq/beet-solana" "^0.4.11"
@@ -113,10 +113,10 @@
     "@solana/web3.js" "^1.56.2"
     bn.js "^5.2.0"
 
-"@convergence-rfq/rfq@2.3.0":
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/@convergence-rfq/rfq/-/rfq-2.3.0.tgz#5908d382a822cf57813db54a470f5b2f530007cd"
-  integrity sha512-yHiOPrypEeueDPPt0ephgP3Nb86M84c9JlszXm+RNMyvGO6kpRvZgGtnqfs7+5bGa/BxrOdzdfC/uJSXSNcysw==
+"@convergence-rfq/rfq@2.3.2":
+  version "2.3.2"
+  resolved "https://registry.yarnpkg.com/@convergence-rfq/rfq/-/rfq-2.3.2.tgz#a3e1e44c5336766ef5df646e13632d808f3d8b2b"
+  integrity sha512-5Dy8c2DqdbxFdjFLKEKDfpHm2ji9re1kHC5hESdMCamoaCfkQnIJunv3r+ubAaW73/lFprVcEypUX4wDxVXwxA==
   dependencies:
     "@convergence-rfq/beet" "^0.7.10"
     "@convergence-rfq/beet-solana" "^0.4.11"
@@ -124,10 +124,10 @@
     "@solana/web3.js" "^1.56.2"
     bn.js "^5.2.0"
 
-"@convergence-rfq/risk-engine@2.3.0":
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/@convergence-rfq/risk-engine/-/risk-engine-2.3.0.tgz#30c17478944a8d13475bee10dd4477ae465a299a"
-  integrity sha512-XiMGG/4t8yy8WArnBst+xaBWQFhyDKrhIFX0UlttyV/mDledbT3l4P7mEjAG4nbbYySEdgNxLM7/suwgCmMsGQ==
+"@convergence-rfq/risk-engine@2.3.2":
+  version "2.3.2"
+  resolved "https://registry.yarnpkg.com/@convergence-rfq/risk-engine/-/risk-engine-2.3.2.tgz#b64a26e2d989ddeae1b1c787f2e38f38181b2019"
+  integrity sha512-Ym15cNxP2o6DZkYZELjWlM80axILg+9OhZGOJ8zD42myaCwWVFUNvMPXLY7o0iPVow+hJgOiSC+Ja3OsGQwD+A==
   dependencies:
     "@convergence-rfq/beet" "^0.7.10"
     "@convergence-rfq/beet-solana" "^0.4.11"
@@ -135,20 +135,20 @@
     "@solana/web3.js" "^1.56.2"
     bn.js "^5.2.0"
 
-"@convergence-rfq/sdk@^4.5.22":
-  version "4.5.22"
-  resolved "https://registry.yarnpkg.com/@convergence-rfq/sdk/-/sdk-4.5.22.tgz#994d386de38f677a3d9ee1f9b58e3f5301dab7e0"
-  integrity sha512-l/n6eCIt1TfGRkxIm+UwVuluX79SkJeCCC1t+9QbmNZ9GUIdE2Ii1IpjEGmlG3ftaLF4UTGuaKL94itxWdG5eA==
+"@convergence-rfq/sdk@^4.5.25":
+  version "4.5.25"
+  resolved "https://registry.yarnpkg.com/@convergence-rfq/sdk/-/sdk-4.5.25.tgz#6bb0af499f22d6410bf196b692d9798061f566f4"
+  integrity sha512-LAqF0H5TqTaZbTieQe6szFWDaUh0HXfQLJj/lZJj42j/m8jBSuTnoq0/3mGsKtAWcAUT14/kl0/DaGQM5527Ag==
   dependencies:
     "@aws-crypto/sha256-js" "3.0.0"
     "@bundlr-network/client" "^0.8.8"
     "@convergence-rfq/beet" "0.7.10"
     "@convergence-rfq/beet-solana" "0.4.11"
-    "@convergence-rfq/psyoptions-american-instrument" "2.3.0"
-    "@convergence-rfq/psyoptions-european-instrument" "2.3.0"
-    "@convergence-rfq/rfq" "2.3.0"
-    "@convergence-rfq/risk-engine" "2.3.0"
-    "@convergence-rfq/spot-instrument" "2.3.0"
+    "@convergence-rfq/psyoptions-american-instrument" "2.3.2"
+    "@convergence-rfq/psyoptions-european-instrument" "2.3.2"
+    "@convergence-rfq/rfq" "2.3.2"
+    "@convergence-rfq/risk-engine" "2.3.2"
+    "@convergence-rfq/spot-instrument" "2.3.2"
     "@coral-xyz/borsh" "^0.26.0"
     "@mithraic-labs/psy-american" "^0.2.3"
     "@mithraic-labs/tokenized-euros" "^0.2.3"
@@ -171,10 +171,10 @@
     node-fetch "^2.6.7"
     uuid "^9.0.0"
 
-"@convergence-rfq/spot-instrument@2.3.0":
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/@convergence-rfq/spot-instrument/-/spot-instrument-2.3.0.tgz#b9320243cade7564c9ab743ec88b32a32fc1991b"
-  integrity sha512-g0fxe623jWHTGNJjnINqT7Mcg7YHiiFAFUaUYv6sOn96JV82fsM6U0DmQOA3D6lgJIxtSbYzXMS64HpyN+8I8A==
+"@convergence-rfq/spot-instrument@2.3.2":
+  version "2.3.2"
+  resolved "https://registry.yarnpkg.com/@convergence-rfq/spot-instrument/-/spot-instrument-2.3.2.tgz#92af9fa2144e66bc2682d774f3c4b396e7904e2a"
+  integrity sha512-nbzJGZJTLNAasRF9iLcPuFjOcIRRQIZw8Fx1ny1gsfHkdJAvOJEC/D4io4dpwpIVdVj+z8HAd08uXVB2QeYMIA==
   dependencies:
     "@convergence-rfq/beet" "^0.7.10"
     "@convergence-rfq/beet-solana" "^0.4.11"

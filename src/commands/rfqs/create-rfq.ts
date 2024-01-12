@@ -56,10 +56,6 @@ export const createRfqCommand = new Command("create-rfq")
       });
       createRFQData.quoteMint = quoteMintAnswer.quoteMint;
 
-      // Ask for amount and validate
-      createRFQData.amount =
-        await askAndValidatePositiveNumber("Enter amount: ");
-
       const supportedTokens = await validateMintAddress(
         createRFQData.baseMint,
         createRFQData.quoteMint,
@@ -95,6 +91,24 @@ export const createRfqCommand = new Command("create-rfq")
       createRFQData.settlementWindow = await askAndValidatePositiveNumber(
         "Enter settlement window time in seconds (60 = 1min): ",
       );
+
+      let message = "";
+      const text =
+        createRFQData.orderType.toUpperCase() === "2-WAY"
+          ? "Trade 2-way"
+          : createRFQData.orderType.toUpperCase();
+      // Ask for amount and validate
+      if (createRFQData.rfqSize.toLowerCase() === "fixed-quote")
+        message = `Enter total ${quoteMintAnswer.quoteMint.toUpperCase()} amount to spend in order to ${text} ${baseMintAnswer.baseMint
+          .split("-")[0]
+          .trim()
+          .toUpperCase()}`;
+      else
+        message = `Enter amount of ${baseMintAnswer.baseMint
+          .split("-")[0]
+          .trim()
+          .toUpperCase()} you want to ${text}`;
+      createRFQData.amount = await askAndValidatePositiveNumber(`${message}: `);
 
       // If rfqType is "options," ask for IStrategyData
       if (createRFQData.rfqType === "options") {
@@ -134,7 +148,7 @@ export const createRfqCommand = new Command("create-rfq")
             screen: await askAndValidatePositiveNumber("Enter screen price: "),
             strike: await askAndValidatePositiveNumber("Enter strike price: "),
             expiry: 0,
-            quantity: await askAndValidatePositiveNumber("Enter quantity: "),
+            quantity: 0,
             size: await askAndValidatePositiveNumber("Enter size: "),
             id: `data-${createRFQData.strategyData.length + 1}`,
             legNumber: createRFQData.strategyData.length + 1,
@@ -153,6 +167,7 @@ export const createRfqCommand = new Command("create-rfq")
           strategyData.expiry =
             dates.find((x) => x.date == legExpirtyAnswer.instrument)
               ?.timestamp || 0;
+          strategyData.quantity = strategyData.size;
 
           // Add IStrategyData to the strategyData array
           createRFQData.strategyData.push(strategyData);

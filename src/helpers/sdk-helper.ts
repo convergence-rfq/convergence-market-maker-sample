@@ -48,6 +48,7 @@ export const tokenNameList = [
   { ticker: "USDC", name: "usd-coin" },
   { ticker: "MSOL", name: "marinade-staked-sol" },
   { ticker: "WSOL", name: "wrapped-solana" },
+  { ticker: "BONK", name: "bonk" },
 ];
 
 export const getTokenFullName = (token: string) => {

@@ -69,7 +69,7 @@ export const createRfqCommand = new Command("create-rfq")
         type: "list",
         name: "orderType",
         message: "Select order type: ",
-        choices: ["buy", "sell", "2-way"],
+        choices: ["buy", "sell", "two-way"],
       });
       createRFQData.orderType = orderTypeAnswer.orderType;
 
@@ -94,8 +94,8 @@ export const createRfqCommand = new Command("create-rfq")
 
       let message = "";
       const text =
-        createRFQData.orderType.toUpperCase() === "2-WAY"
-          ? "Trade 2-way"
+        createRFQData.orderType.toUpperCase() === "TWO-WAY"
+          ? "Trade two-way"
           : createRFQData.orderType.toUpperCase();
       // Ask for amount and validate
       if (createRFQData.rfqSize.toLowerCase() === "fixed-quote")

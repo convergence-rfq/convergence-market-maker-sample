@@ -11,20 +11,23 @@ export const respondOrderCommand = new Command("respond-order")
       output: process.stdout,
     });
 
-    rl.question("Please enter the order ID (Public Key): ", async (orderId) => {
-      rl.question("Please enter the amount: ", async (amount) => {
-        try {
-          const base64Tx = await respondOrder(orderId, parseFloat(amount));
+    rl.question(
+      "Please enter the order(rfq) ID (Public Key): ",
+      async (orderId) => {
+        rl.question("Please enter the amount: ", async (amount) => {
+          try {
+            const base64Tx = await respondOrder(orderId, parseFloat(amount));
 
-          // Broadcasting transaction on chain
-          const signature = await broadcastTransaction(base64Tx);
+            // Broadcasting transaction on chain
+            const signature = await broadcastTransaction(base64Tx);
 
-          console.log("Order responded. Transaction signature:", signature);
-        } catch (error: any) {
-          console.error("An error occurred:", error);
-        } finally {
-          rl.close();
-        }
-      });
-    });
+            console.log("Order responded. Transaction signature:", signature);
+          } catch (error: any) {
+            console.error("An error occurred:", error);
+          } finally {
+            rl.close();
+          }
+        });
+      },
+    );
   });

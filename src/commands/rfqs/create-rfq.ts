@@ -187,14 +187,9 @@ export const createRfqCommand = new Command("create-rfq")
 
       // Creating base64 transaction
       const base64Txs = await createRFQ(createRFQData);
-      if (createRFQData.rfqType === "spot") {
-        const signature = await broadcastTransaction(base64Txs);
+      for (const base64Tx of base64Txs) {
+        const signature = await broadcastTransaction(base64Tx);
         console.info("Tx Signature.", signature);
-      } else {
-        for (const base64Tx of base64Txs) {
-          const signature = await broadcastTransaction(base64Tx);
-          console.info("Tx Signature.", signature);
-        }
       }
     } catch (error: any) {
       console.error("An error occurred:", error);

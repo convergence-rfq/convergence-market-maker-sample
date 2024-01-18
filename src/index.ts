@@ -35,11 +35,15 @@ import { getOrderCommand } from "./commands/orders/get-order";
 import { cancelOrderCommand } from "./commands/orders/cancel-order";
 import { cancelOrdersCommand } from "./commands/orders/cancel-orders";
 import { respondOrderCommand } from "./commands/orders/respond-order";
+import { fundOrderCommand } from "./commands/orders/fund-order";
+import { settleOrderCommand } from "./commands/orders/settle-order";
 program.addCommand(getOrdersCommand);
 program.addCommand(getOrderCommand);
 program.addCommand(cancelOrderCommand);
 program.addCommand(cancelOrdersCommand);
 program.addCommand(respondOrderCommand);
+program.addCommand(fundOrderCommand);
+program.addCommand(settleOrderCommand);
 
 // Instruments
 import { getInstrumentsCommand } from "./commands/instruments/get-instruments";

@@ -55,6 +55,8 @@ get-order
 cancel-orders
 cancel-order
 respond-order
+fund-order
+settle-order
 
 get-rfqs
 create-rfq

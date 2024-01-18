@@ -16,8 +16,7 @@ import {
 import * as bs58 from "bs58";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 
-const rpcUrl =
-  process.env.RPC_URL || "https://api.mainnet-beta.solana.com"
+const rpcUrl = process.env.RPC_URL || "https://api.mainnet-beta.solana.com";
 
 export const connection = new Connection(rpcUrl, "confirmed");
 

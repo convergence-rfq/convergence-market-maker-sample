@@ -2,6 +2,13 @@ import axios from "axios";
 import { airDropSol } from "./utils";
 import { getUserBalances } from "./sdk-helper";
 
+const CONVERGENCE_API_KEY = process.env.CONVERGENCE_API_KEY;
+const config = {
+  headers: {
+    Authorization: CONVERGENCE_API_KEY,
+  },
+};
+
 export async function getCollateralAccount() {
   try {
     const walletAddress = process.env.PUBLIC_KEY || "";
@@ -20,7 +27,8 @@ export async function getCollateralAccount() {
     const apiUrl = `${baseUrl}collateral?address=${walletAddress}`;
 
     // Make a GET request to the API
-    const response = await axios.get(apiUrl);
+    const response = await axios.get(apiUrl, config);
+
     if (response.data.status === "success") {
       return response.data.response;
     } else {
@@ -72,7 +80,7 @@ export async function createCollateralAccount() {
     };
 
     // Make a POST request to the API
-    const response = await axios.post(apiUrl, requestBody);
+    const response = await axios.post(apiUrl, requestBody, config);
 
     if (response.data.status === "success") {
       return response.data.response;
@@ -110,7 +118,7 @@ export async function addCollateralFund(addCollateralJsonData: any) {
 
     // Make a POST request to the API
     const apiUrl = `${baseUrl}collateral/fund`;
-    const response = await axios.post(apiUrl, requestBody);
+    const response = await axios.post(apiUrl, requestBody, config);
 
     if (response.data.status === "success") {
       return response.data.response;
@@ -148,7 +156,7 @@ export async function withdrawCollateralFund(addCollateralJsonData: any) {
 
     // Make a POST request to the API
     const apiUrl = `${baseUrl}collateral/withdraw`;
-    const response = await axios.post(apiUrl, requestBody);
+    const response = await axios.post(apiUrl, requestBody, config);
 
     if (response.data.status === "success") {
       return response.data.response;

@@ -1,5 +1,12 @@
 import axios from "axios";
 
+const CONVERGENCE_API_KEY = process.env.CONVERGENCE_API_KEY;
+const config = {
+  headers: {
+    Authorization: CONVERGENCE_API_KEY,
+  },
+};
+
 export async function getInstruments() {
   try {
     const baseUrl = process.env.BASE_URL;
@@ -11,7 +18,8 @@ export async function getInstruments() {
     const apiUrl = `${baseUrl}instruments`;
 
     // Make a GET request to the API
-    const response = await axios.get(apiUrl);
+    const response = await axios.get(apiUrl, config);
+
     if (response.data.status === "success") {
       return response.data.response;
     } else {

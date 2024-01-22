@@ -1,13 +1,13 @@
 import { Command } from "commander";
 import {
-  addCollateralFund,
   getCollateralAccount,
+  withdrawCollateralFund,
 } from "../../helpers/collateral";
 import { broadcastTransaction } from "../../helpers/utils";
 import readline from "readline";
 
 export const withdrawCollateralFundCommand = new Command("withdraw-collateral")
-  .description("Add collateral fund to account")
+  .description("Withdraw collateral fund to account")
   .action(async () => {
     const rl = readline.createInterface({
       input: process.stdin,
@@ -32,7 +32,7 @@ export const withdrawCollateralFundCommand = new Command("withdraw-collateral")
           // validating file inputs
           validateInputs(withdrawFund);
 
-          const base64Tx = await addCollateralFund(withdrawFund);
+          const base64Tx = await withdrawCollateralFund(withdrawFund);
           const signature = await broadcastTransaction(base64Tx);
 
           console.log("Withdraw fund successfully");

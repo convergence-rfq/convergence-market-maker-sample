@@ -9,6 +9,13 @@ import {
 import { IGetRFQ } from "../commands/rfqs/get-rfqs";
 import { ICreateRFQ } from "./utils";
 
+const CONVERGENCE_API_KEY = process.env.CONVERGENCE_API_KEY;
+const config = {
+  headers: {
+    Authorization: CONVERGENCE_API_KEY,
+  },
+};
+
 export async function getRFQs(getRFQJsonData: IGetRFQ) {
   try {
     const baseUrl = process.env.BASE_URL;
@@ -40,7 +47,8 @@ export async function getRFQs(getRFQJsonData: IGetRFQ) {
     const apiUrl = `${baseUrl}rfqs?${queryString}`;
 
     // Make a GET request to the API
-    const response = await axios.get(apiUrl);
+    const response = await axios.get(apiUrl, config);
+
     if (response.data.status === "success") {
       return response.data.response;
     } else {
@@ -120,7 +128,8 @@ export async function createRFQ(createRFQData: ICreateRFQ) {
     }
 
     // Make a POST request to the API
-    const response = await axios.post(apiUrl, requestBody);
+    const response = await axios.post(apiUrl, requestBody, config);
+
     if (response.data.status === "success") {
       console.info("Base64 transaction.", response.data.response);
 
@@ -146,7 +155,8 @@ export async function getOrdersByRFQId(rfqId: string) {
     const apiUrl = `${baseUrl}rfqs/${rfqId}/orders`;
 
     // Make a GET request to the API
-    const response = await axios.get(apiUrl);
+    const response = await axios.get(apiUrl, config);
+
     if (response.data.status === "success") {
       return response.data.response;
     } else {
@@ -187,7 +197,8 @@ export async function confirmOrder(
     };
 
     // Make a POST request to the API
-    const response = await axios.put(apiUrl, requestBody);
+    const response = await axios.put(apiUrl, requestBody, config);
+
     if (response.data.status === "success") {
       return response.data.response;
     } else {

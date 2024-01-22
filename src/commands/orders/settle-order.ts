@@ -1,6 +1,6 @@
 import { Command } from "commander";
 import readline from "readline";
-import { fundOrderById, settleOrderById } from "../../helpers/orders";
+import { settleOrderById } from "../../helpers/orders";
 import { broadcastTransaction } from "../../helpers/utils";
 
 export const settleOrderCommand = new Command("settle-order")

@@ -1,5 +1,12 @@
 import axios from "axios";
 
+const CONVERGENCE_API_KEY = process.env.CONVERGENCE_API_KEY;
+const config = {
+  headers: {
+    Authorization: CONVERGENCE_API_KEY,
+  },
+};
+
 export async function getOrders() {
   try {
     const walletAddress = process.env.PUBLIC_KEY;
@@ -17,7 +24,8 @@ export async function getOrders() {
     const apiUrl = `${baseUrl}orders?address=${walletAddress}`;
 
     // Make a GET request to the API
-    const response = await axios.get(apiUrl);
+    const response = await axios.get(apiUrl, config);
+
     if (response.data.status === "success") {
       return response.data.response;
     } else {
@@ -47,7 +55,8 @@ export async function getOrderById(orderId: string) {
     const apiUrl = `${baseUrl}orders/${orderId}`;
 
     // Make a GET request to the API
-    const response = await axios.get(apiUrl);
+    const response = await axios.get(apiUrl, config);
+
     if (response.data.status === "success") {
       return response.data.response;
     } else {
@@ -82,7 +91,11 @@ export async function cancelOrderById(orderId: string) {
     };
 
     // Make a GET request to the API
-    const response = await axios.delete(apiUrl, { data: requestBody });
+    const response = await axios.delete(apiUrl, {
+      ...config,
+      data: requestBody,
+    });
+
     if (response.data.status === "success") {
       return response.data.response;
     } else {
@@ -112,7 +125,8 @@ export async function cancelOrders() {
     const apiUrl = `${baseUrl}orders?address=${walletAddress}`;
 
     // Make a GET request to the API
-    const response = await axios.delete(apiUrl);
+    const response = await axios.delete(apiUrl, config);
+
     if (response.data.status === "success") {
       return response.data.response;
     } else {
@@ -149,7 +163,8 @@ export async function respondOrder(orderId: string, amount: number) {
     };
 
     // Make a GET request to the API
-    const response = await axios.post(apiUrl, requestBody);
+    const response = await axios.post(apiUrl, requestBody, config);
+
     if (response.data.status === "success") {
       return response.data.response;
     } else {
@@ -179,7 +194,12 @@ export async function fundOrderById(orderId: string) {
     const apiUrl = `${baseUrl}orders/${orderId}`;
 
     // Make a POST request to the API
-    const response = await axios.post(apiUrl, { address: walletAddress });
+    const response = await axios.post(
+      apiUrl,
+      { address: walletAddress },
+      config,
+    );
+
     if (response.data.status === "success") {
       return response.data.response;
     } else {
@@ -209,7 +229,12 @@ export async function settleOrderById(orderId: string) {
     const apiUrl = `${baseUrl}orders/${orderId}`;
 
     // Make a PUT request to the API
-    const response = await axios.put(apiUrl, { address: walletAddress });
+    const response = await axios.put(
+      apiUrl,
+      { address: walletAddress },
+      config,
+    );
+
     if (response.data.status === "success") {
       return response.data.response;
     } else {

@@ -95,17 +95,13 @@ export async function createRFQ(createRFQData: ICreateRFQ) {
       settlementWindow: createRFQData.settlementWindow,
       strategyData: createRFQData.strategyData,
       optionStyle: createRFQData.optionStyle,
+      whitelistAccount: createRFQData.counterParties,
     };
 
     const balances = await getUserBalances(process.env.PRIVATE_KEY || "");
 
     if (balances?.balances?.dSOL?.tokenBalance === 0) {
       console.error("Low SOL balance, please deposite first");
-      process.exit(1);
-    }
-    //@ts-ignore
-    if (balances?.balances?.USDC?.tokenBalance === 0) {
-      console.error("Low USDC balance, please deposite first.");
       process.exit(1);
     }
 
@@ -116,24 +112,13 @@ export async function createRFQ(createRFQData: ICreateRFQ) {
       await initializeCollateralAccount(cvg, user);
     }
 
-    const reqCollateral = await calcCollateral(requestBody);
-
-    if (balances?.freeCollateral < reqCollateral?.requiredCollateral) {
-      console.error(
-        `Low collateral balance, please add at least ${reqCollateral?.requiredCollateral.toFixed(
-          5,
-        )} collateral first`,
-      );
-      process.exit(1);
-    }
-
     // Make a POST request to the API
     const response = await axios.post(apiUrl, requestBody, config);
 
     if (response.data.status === "success") {
       console.info("Base64 transaction.", response.data.response);
 
-      return response.data.response.response;
+      return response.data.response;
     } else {
       console.error("API request failed.", response);
       process.exit(1);

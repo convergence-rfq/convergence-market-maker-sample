@@ -23,6 +23,7 @@ export const createRfqCommand = new Command("create-rfq")
       settlementWindow: 0,
       strategyData: [],
       optionStyle: "",
+      counterParties: [],
     };
 
     try {
@@ -110,6 +111,40 @@ export const createRfqCommand = new Command("create-rfq")
           .toUpperCase()} you want to ${text}`;
       createRFQData.amount = await askAndValidatePositiveNumber(`${message}: `);
 
+      // Ask if the user wants to add counterparty selection
+      const addCounterpartyAnswer = await inquirer.prompt({
+        type: "list",
+        name: "addCounterparty",
+        message: "Do you want to add counterparty selection?",
+        choices: ["No", "Yes"],
+      });
+
+      if (addCounterpartyAnswer.addCounterparty === "Yes") {
+        const counterParties: string[] = [];
+
+        let addMoreCounterparties = true;
+        while (addMoreCounterparties) {
+          const counterpartyAnswer = await inquirer.prompt({
+            type: "input",
+            name: "counterparty",
+            message: "Enter counterparty wallet address: ",
+          });
+
+          counterParties.push(counterpartyAnswer.counterparty);
+
+          const addAnotherAnswer = await inquirer.prompt({
+            type: "list",
+            name: "addAnother",
+            message: "Do you want to add more?",
+            choices: ["No", "Yes"],
+          });
+
+          addMoreCounterparties = addAnotherAnswer.addAnother === "Yes";
+        }
+
+        createRFQData.counterParties = counterParties;
+      }
+
       // If rfqType is "options," ask for IStrategyData
       if (createRFQData.rfqType === "options") {
         // Ask for rfqSize and validate
@@ -186,9 +221,15 @@ export const createRfqCommand = new Command("create-rfq")
       }
 
       // Creating base64 transaction
-      const base64Txs = await createRFQ(createRFQData);
-      for (const base64Tx of base64Txs) {
-        const signature = await broadcastTransaction(base64Tx);
+      const result = await createRFQ(createRFQData);
+
+      const tempSinger = result.tempSinger;
+      for (const [index, base64Tx] of result.response.entries()) {
+        const signature =
+          tempSinger && index === 0
+            ? await broadcastTransaction(base64Tx, tempSinger)
+            : await broadcastTransaction(base64Tx);
+
         console.info("Tx Signature.", signature);
       }
     } catch (error: any) {
@@ -287,12 +328,16 @@ async function validateMintAddress(
 
 async function getSupportedTokens() {
   const res = await getUserBalances("");
-  const tokens = Object.keys(res.balances).map((key) => ({
-    //@ts-ignore
-    iconKey: res.balances[key].iconKey.toLowerCase(),
-    //@ts-ignore
-    mintAddress: res.balances[key].mintAddress,
-  }));
+  const supportedTokens = ["msol", "btc", "usdc"];
+  const tokens = Object.keys(res.balances)
+    .map((key) => ({
+      //@ts-ignore
+      iconKey: res.balances[key].iconKey.toLowerCase(),
+      //@ts-ignore
+      mintAddress: res.balances[key].mintAddress,
+    }))
+    .filter((token) => supportedTokens.includes(token.iconKey));
+  console.log(tokens);
   return tokens;
 }
 

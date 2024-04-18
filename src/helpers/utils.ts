@@ -21,7 +21,10 @@ const MIN_AUTHORITY = Keypair.fromSecretKey(
 
 const privateKeyBase58 = process.env.PRIVATE_KEY || "";
 
-export const broadcastTransaction = async (base64Response: string) => {
+export const broadcastTransaction = async (
+  base64Response: string,
+  tempSinger?: string,
+) => {
   if (!base64Response) {
     console.error(`Base64 transaction is missing`);
     process.exit(1);
@@ -36,9 +39,17 @@ export const broadcastTransaction = async (base64Response: string) => {
 
   try {
     const privateKeyBytes = bs58.decode(privateKeyBase58);
-    return await sendAndConfirmTransaction(connection, Transaction.from(txn), [
-      Keypair.fromSecretKey(privateKeyBytes),
-    ]);
+    const singers = [Keypair.fromSecretKey(privateKeyBytes)];
+    if (tempSinger) {
+      const tempSingerPrivateKeyBytes = bs58.decode(tempSinger || "");
+      singers.push(Keypair.fromSecretKey(tempSingerPrivateKeyBytes));
+    }
+
+    return await sendAndConfirmTransaction(
+      connection,
+      Transaction.from(txn),
+      singers,
+    );
   } catch (error) {
     console.error("Error broadcastTransaction:", error);
     process.exit(1);
@@ -126,6 +137,7 @@ export interface ICreateRFQ {
   settlementWindow: number;
   strategyData: IStrategyData[];
   optionStyle: string;
+  counterParties: string[];
 }
 
 export interface IStrategyData {

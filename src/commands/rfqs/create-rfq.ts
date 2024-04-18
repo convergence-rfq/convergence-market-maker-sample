@@ -180,7 +180,7 @@ export const createRfqCommand = new Command("create-rfq")
             quoteAsset: supportedTokens.quoteMint.toUpperCase(),
             direction: direction === "long" ? true : false,
             instrument: instrument.toUpperCase(),
-            screen: await askAndValidatePositiveNumber("Enter screen price: "),
+            //screen: await askAndValidatePositiveNumber("Enter screen price: "),
             strike: await askAndValidatePositiveNumber("Enter strike price: "),
             expiry: 0,
             quantity: 0,

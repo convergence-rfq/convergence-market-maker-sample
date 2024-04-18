@@ -150,7 +150,7 @@ export interface IStrategyData {
   oracle: number;
   quantity: number;
   quoteAsset: string;
-  screen: number;
+  //screen: number;
   size: number;
   strike: number;
   expiry: number;

@@ -32,7 +32,7 @@ export const getRfqsCommand = new Command("get-rfqs")
     try {
       // Ask the user if they want to specify a specific RFQ
       rl.question(
-        "Do you want to get a specific RFQ? Enter public key or press Enter to continue: ",
+        "Do you want to get a specific RFQ?\nEnter public key or press Enter to continue: ",
         async (publicKey) => {
           if (publicKey.trim()) {
             // If the user entered a public key, validate it
@@ -159,7 +159,8 @@ async function askForValidInstrument(prompt: string): Promise<string> {
     // Validate instrument input
     while (
       input.toLowerCase() !== "spot" &&
-      input.toLowerCase() !== "options"
+      input.toLowerCase() !== "options" &&
+      input.trim() !== ""
     ) {
       // Ask again for a valid input
       input = await askForValidInput(

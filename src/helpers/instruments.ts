@@ -15,7 +15,7 @@ export async function getInstruments() {
       process.exit(1);
     }
 
-    const apiUrl = `${baseUrl}instruments`;
+    const apiUrl = `${baseUrl}instruments?cluster=${process.env.CLUSTER}`;
 
     // Make a GET request to the API
     const response = await axios.get(apiUrl, config);

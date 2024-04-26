@@ -21,7 +21,7 @@ export async function getOrders() {
       process.exit(1);
     }
 
-    const apiUrl = `${baseUrl}orders?address=${walletAddress}`;
+    const apiUrl = `${baseUrl}orders?userAddress=${walletAddress}&cluster=${process.env.CLUSTER}`;
 
     // Make a GET request to the API
     const response = await axios.get(apiUrl, config);
@@ -54,8 +54,16 @@ export async function getOrderById(orderId: string) {
 
     const apiUrl = `${baseUrl}orders/${orderId}`;
 
+    // Prepare the request body
+    const requestBody = {
+      cluster: process.env.CLUSTER,
+    };
+
     // Make a GET request to the API
-    const response = await axios.get(apiUrl, config);
+    const response = await axios.get(apiUrl, {
+      ...config,
+      data: requestBody,
+    });
 
     if (response.data.status === "success") {
       return response.data.response;
@@ -87,7 +95,8 @@ export async function cancelOrderById(orderId: string) {
 
     // Prepare the request body
     const requestBody = {
-      address: walletAddress,
+      userAddress: walletAddress,
+      cluster: process.env.CLUSTER,
     };
 
     // Make a GET request to the API
@@ -122,7 +131,7 @@ export async function cancelOrders() {
       process.exit(1);
     }
 
-    const apiUrl = `${baseUrl}orders?address=${walletAddress}`;
+    const apiUrl = `${baseUrl}orders?userAddress=${walletAddress}&cluster=${process.env.CLUSTER}`;
 
     // Make a GET request to the API
     const response = await axios.delete(apiUrl, config);
@@ -157,9 +166,10 @@ export async function respondOrder(orderId: string, amount: number) {
 
     // Prepare the request body
     const requestBody = {
-      address: walletAddress,
+      useraddress: walletAddress,
       rfq: orderId,
       amount,
+      cluster: process.env.CLUSTER,
     };
 
     // Make a GET request to the API
@@ -196,7 +206,7 @@ export async function fundOrderById(orderId: string) {
     // Make a POST request to the API
     const response = await axios.post(
       apiUrl,
-      { address: walletAddress },
+      { userAddress: walletAddress, cluster: process.env.CLUSTER },
       config,
     );
 
@@ -231,7 +241,7 @@ export async function settleOrderById(orderId: string) {
     // Make a PUT request to the API
     const response = await axios.put(
       apiUrl,
-      { address: walletAddress },
+      { userAddress: walletAddress, cluster: process.env.CLUSTER },
       config,
     );
 

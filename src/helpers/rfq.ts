@@ -39,7 +39,9 @@ export async function getRFQs(getRFQJsonData: IGetRFQ) {
     if (getRFQJsonData.rfqAccountAddress)
       queryParams.push(`rfqAccountAddress=${getRFQJsonData.rfqAccountAddress}`);
     if (getRFQJsonData.onlyMyRFQs)
-      queryParams.push(`address=${process.env.PUBLIC_KEY}`);
+      queryParams.push(`userAddress=${process.env.PUBLIC_KEY}`);
+
+    queryParams.push(`cluster=${process.env.CLUSTER}`);
 
     // Construct the query string
     const queryString = queryParams.join("&");
@@ -88,7 +90,7 @@ export async function createRFQ(createRFQData: ICreateRFQ) {
       amount: createRFQData.amount,
       quoteMint: createRFQData?.quoteMint,
       baseMint: createRFQData?.baseMint,
-      address: walletAddress,
+      userAddress: walletAddress,
       orderType: createRFQData.orderType,
       rfqSize: createRFQData.rfqSize,
       rfqExpiry: createRFQData.rfqExpiry,
@@ -96,6 +98,7 @@ export async function createRFQ(createRFQData: ICreateRFQ) {
       strategyData: createRFQData.strategyData,
       optionStyle: createRFQData.optionStyle,
       whitelistAccount: createRFQData.counterParties,
+      cluster: process.env.CLUSTER,
     };
 
     const balances = await getUserBalances(process.env.PRIVATE_KEY || "");
@@ -139,8 +142,14 @@ export async function getOrdersByRFQId(rfqId: string) {
 
     const apiUrl = `${baseUrl}rfqs/${rfqId}/orders`;
 
+    const requestBody = {
+      cluster: process.env.CLUSTER,
+    };
     // Make a GET request to the API
-    const response = await axios.get(apiUrl, config);
+    const response = await axios.get(apiUrl, {
+      ...config,
+      data: requestBody,
+    });
 
     if (response.data.status === "success") {
       return response.data.response;
@@ -176,9 +185,10 @@ export async function confirmOrder(
 
     // Prepare the request body
     const requestBody = {
-      address: walletAddress,
+      userAddress: walletAddress,
       responseAccount,
       responseSide,
+      cluster: process.env.CLUSTER,
     };
 
     // Make a POST request to the API

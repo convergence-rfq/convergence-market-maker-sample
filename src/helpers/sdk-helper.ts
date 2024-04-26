@@ -233,7 +233,7 @@ export const getUserBalances = async (privateKeyBase58: string) => {
     cvg.protocol().getRegisteredMints(),
   ]);
 
-  const network = process.env.NODE_ENV || "devnet";
+  const network = process.env.CLUSTER || "devnet";
   const tokenList = await getBaseAssets(
     registeredMints,
     baseAssets,

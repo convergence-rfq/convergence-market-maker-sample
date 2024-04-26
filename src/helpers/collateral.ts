@@ -24,7 +24,14 @@ export async function getCollateralAccount() {
       process.exit(1);
     }
 
-    const apiUrl = `${baseUrl}collateral?address=${walletAddress}`;
+    // Get the NODE_ENV from environment variables
+    const cluster = process.env.CLUSTER;
+    if (!cluster) {
+      console.error("NODE_ENV is not defined in the .env file.");
+      process.exit(1);
+    }
+
+    const apiUrl = `${baseUrl}collateral?userAddress=${walletAddress}&cluster=${cluster}`;
 
     // Make a GET request to the API
     const response = await axios.get(apiUrl, config);
@@ -49,6 +56,13 @@ export async function createCollateralAccount() {
       console.error("BASE_URL is not defined in the .env file.");
       process.exit(1);
     }
+    // Get the NODE_ENV from environment variables
+    const cluster = process.env.CLUSTER;
+    if (!cluster) {
+      console.error("NODE_ENV is not defined in the .env file.");
+      process.exit(1);
+    }
+
     const apiUrl = `${baseUrl}collateral`;
 
     const walletAddress = process.env.PUBLIC_KEY || "";
@@ -76,7 +90,8 @@ export async function createCollateralAccount() {
 
     // Prepare the request body
     const requestBody = {
-      address: walletAddress,
+      userAddress: walletAddress,
+      cluster,
     };
 
     // Make a POST request to the API
@@ -110,10 +125,18 @@ export async function addCollateralFund(addCollateralJsonData: any) {
       process.exit(1);
     }
 
+    // Get the NODE_ENV from environment variables
+    const cluster = process.env.CLUSTER;
+    if (!cluster) {
+      console.error("NODE_ENV is not defined in the .env file.");
+      process.exit(1);
+    }
+
     // Prepare the request body
     const requestBody = {
-      address: walletAddress,
+      userAddress: walletAddress,
       amount: addCollateralJsonData.amount,
+      cluster,
     };
 
     // Make a POST request to the API
@@ -148,10 +171,18 @@ export async function withdrawCollateralFund(addCollateralJsonData: any) {
       process.exit(1);
     }
 
+    // Get the NODE_ENV from environment variables
+    const cluster = process.env.CLUSTER;
+    if (!cluster) {
+      console.error("NODE_ENV is not defined in the .env file.");
+      process.exit(1);
+    }
+
     // Prepare the request body
     const requestBody = {
-      address: walletAddress,
+      userAddress: walletAddress,
       amount: addCollateralJsonData.amount,
+      cluster,
     };
 
     // Make a POST request to the API

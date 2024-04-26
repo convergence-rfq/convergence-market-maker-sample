@@ -12,7 +12,7 @@ export const cancelOrdersCommand = new Command("cancel-orders")
     });
 
     rl.question(
-      "Do you really want to cancel all your orders? Press Y for confirmation, N for cancel: ",
+      "Do you really want to cancel all your orders?\nPress Y for confirmation, N for cancel: ",
       async (answer) => {
         try {
           if (answer.toUpperCase() === "Y") {

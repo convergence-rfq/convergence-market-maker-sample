@@ -42,9 +42,9 @@ export const createRfqCommand = new Command("create-rfq")
         type: "list",
         name: "baseMint",
         message: "Select Base mint: ",
-        choices: tokens.map(
-          (token) => `${token.iconKey} - ${token.mintAddress}`,
-        ),
+        choices: tokens
+          .filter((item) => item.iconKey !== "usdc")
+          .map((token) => `${token.iconKey} - ${token.mintAddress}`),
       });
       createRFQData.baseMint = baseMintAnswer.baseMint.split("-")[0].trim();
 
@@ -337,7 +337,6 @@ async function getSupportedTokens() {
       mintAddress: res.balances[key].mintAddress,
     }))
     .filter((token) => supportedTokens.includes(token.iconKey));
-  console.log(tokens);
   return tokens;
 }
 

@@ -32,7 +32,7 @@ export const createRfqCommand = new Command("create-rfq")
         type: "list",
         name: "rfqType",
         message: "Select RFQ type: ",
-        choices: ["spot", "options"],
+        choices: ["spot", "options", "futures"],
       });
       createRFQData.rfqType = rfqTypeAnswer.rfqType;
 
@@ -42,9 +42,14 @@ export const createRfqCommand = new Command("create-rfq")
         type: "list",
         name: "baseMint",
         message: "Select Base mint: ",
-        choices: tokens
-          .filter((item) => item.iconKey !== "usdc")
-          .map((token) => `${token.iconKey} - ${token.mintAddress}`),
+        choices:
+          createRFQData.rfqType === "futures"
+            ? tokens
+                .filter((item) => item.iconKey === "msol")
+                .map((token) => `${token.iconKey} - ${token.mintAddress}`)
+            : tokens
+                .filter((item) => item.iconKey !== "usdc")
+                .map((token) => `${token.iconKey} - ${token.mintAddress}`),
       });
       createRFQData.baseMint = baseMintAnswer.baseMint.split("-")[0].trim();
 
@@ -115,7 +120,7 @@ export const createRfqCommand = new Command("create-rfq")
       const addCounterpartyAnswer = await inquirer.prompt({
         type: "list",
         name: "addCounterparty",
-        message: "Do you want to add counterparty selection?",
+        message: "Do you want to add counter parties?",
         choices: ["No", "Yes"],
       });
 
@@ -127,7 +132,7 @@ export const createRfqCommand = new Command("create-rfq")
           const counterpartyAnswer = await inquirer.prompt({
             type: "input",
             name: "counterparty",
-            message: "Enter counterparty wallet address: ",
+            message: "Enter counter party wallet address: ",
           });
 
           counterParties.push(counterpartyAnswer.counterparty);
@@ -180,7 +185,6 @@ export const createRfqCommand = new Command("create-rfq")
             quoteAsset: supportedTokens.quoteMint.toUpperCase(),
             direction: direction === "long" ? true : false,
             instrument: instrument.toUpperCase(),
-            //screen: await askAndValidatePositiveNumber("Enter screen price: "),
             strike: await askAndValidatePositiveNumber("Enter strike price: "),
             expiry: 0,
             quantity: 0,
@@ -189,6 +193,7 @@ export const createRfqCommand = new Command("create-rfq")
             legNumber: createRFQData.strategyData.length + 1,
             mintedInstrument: null,
             oracle: 0,
+            productIndex: 0,
           };
 
           // Calculating leg expiry dates and timestamps
@@ -202,6 +207,54 @@ export const createRfqCommand = new Command("create-rfq")
           strategyData.expiry =
             dates.find((x) => x.date == legExpirtyAnswer.instrument)
               ?.timestamp || 0;
+          strategyData.quantity = strategyData.size;
+
+          // Add IStrategyData to the strategyData array
+          createRFQData.strategyData.push(strategyData);
+
+          // Ask if the user wants to add another strategyData
+          const addAnotherStrategyAnswer = await inquirer.prompt({
+            type: "list",
+            name: "addAnotherStrategy",
+            message: "Add another strategy data? ",
+            choices: ["No", "Yes"],
+          });
+
+          addAnotherStrategy =
+            addAnotherStrategyAnswer.addAnotherStrategy === "Yes";
+        }
+      }
+
+      if (createRFQData.rfqType === "futures") {
+        let addAnotherStrategy = true;
+        while (addAnotherStrategy) {
+          const directionAnswer = await inquirer.prompt({
+            type: "list",
+            name: "direction",
+            message: "Select direction: ",
+            choices: ["short", "long"],
+          });
+          const direction = directionAnswer.direction;
+
+          const instrument = "perp";
+
+          // Ask for IStrategyData fields and validate
+          const strategyData: IStrategyData = {
+            baseAsset: supportedTokens.baseMint.toUpperCase(),
+            quoteAsset: supportedTokens.quoteMint.toUpperCase(),
+            direction: direction === "long" ? true : false,
+            instrument: instrument.toUpperCase(),
+            strike: 0,
+            expiry: 0,
+            quantity: 0,
+            size: await askAndValidatePositiveNumber("Enter size: "),
+            id: `data-${createRFQData.strategyData.length + 1}`,
+            legNumber: createRFQData.strategyData.length + 1,
+            mintedInstrument: null,
+            oracle: 0,
+            productIndex: 2, // only MSOL support at the moment
+          };
+
           strategyData.quantity = strategyData.size;
 
           // Add IStrategyData to the strategyData array

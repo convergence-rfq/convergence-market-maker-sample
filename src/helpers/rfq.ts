@@ -1,6 +1,5 @@
 import axios from "axios";
 import {
-  calcCollateral,
   createCvg,
   getKeypair,
   getUserBalances,
@@ -8,6 +7,8 @@ import {
 } from "./sdk-helper";
 import { IGetRFQ } from "../commands/rfqs/get-rfqs";
 import { ICreateRFQ } from "./utils";
+import dexterity, { DexterityWallet } from "@hxronetwork/dexterity-ts";
+import { getTrgs } from "./hxro";
 
 const CONVERGENCE_API_KEY = process.env.CONVERGENCE_API_KEY;
 const config = {
@@ -97,7 +98,7 @@ export async function createRFQ(createRFQData: ICreateRFQ) {
       settlementWindow: createRFQData.settlementWindow,
       strategyData: createRFQData.strategyData,
       optionStyle: createRFQData.optionStyle,
-      whitelistAccount: createRFQData.counterParties,
+      counterParties: createRFQData.counterParties,
       cluster: process.env.CLUSTER,
     };
 
@@ -115,6 +116,21 @@ export async function createRFQ(createRFQData: ICreateRFQ) {
       await initializeCollateralAccount(cvg, user);
     }
 
+    if (createRFQData.rfqType == "futures") {
+      console.log("checking trgs...");
+      const tmpManifest = await dexterity.getManifest(
+        cvg.connection.rpcEndpoint,
+        true,
+        cvg.identity() as DexterityWallet,
+      );
+
+      const trgs = await getTrgs(tmpManifest);
+      
+      if (!trgs || trgs.length == 0) {
+        console.log("No collateral account found, please create first");
+        process.exit(1);
+      }
+    }
     // Make a POST request to the API
     const response = await axios.post(apiUrl, requestBody, config);
 

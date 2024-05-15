@@ -49,4 +49,14 @@ program.addCommand(settleOrderCommand);
 import { getInstrumentsCommand } from "./commands/instruments/get-instruments";
 program.addCommand(getInstrumentsCommand);
 
+// Hxro
+import { addHxroCollateralFundCommand } from "./commands/hxro/add-collateral";
+import { withdrawHxroCollateralFundCommand } from "./commands/hxro/withdraw-collateral";
+import { getHxroCollateralFundCommand } from "./commands/hxro/get-collateral";
+import { createHxroCollateralFundCommand } from "./commands/hxro/create-collateral-account";
+program.addCommand(addHxroCollateralFundCommand);
+program.addCommand(withdrawHxroCollateralFundCommand);
+program.addCommand(getHxroCollateralFundCommand);
+program.addCommand(createHxroCollateralFundCommand);
+
 program.parse(process.argv);

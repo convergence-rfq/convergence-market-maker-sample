@@ -16,12 +16,13 @@ export const respondOrderCommand = new Command("respond-order")
       async (orderId) => {
         rl.question("Please enter the amount: ", async (amount) => {
           try {
-            const base64Tx = await respondOrder(orderId, parseFloat(amount));
+            const result = await respondOrder(orderId, parseFloat(amount));
 
             // Broadcasting transaction on chain
-            const signature = await broadcastTransaction(base64Tx);
+            const signature = await broadcastTransaction(result.txn);
 
-            console.log("Order responded. Transaction signature:", signature);
+            console.log("Order responded.\nTransaction signature:", signature);
+            console.log("Response id:", result.responsePda);
           } catch (error: any) {
             console.error("An error occurred:", error);
           } finally {

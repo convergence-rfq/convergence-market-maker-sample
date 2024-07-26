@@ -1,6 +1,5 @@
 import axios from "axios";
 import {
-  calcCollateral,
   createCvg,
   getKeypair,
   getUserBalances,
@@ -8,6 +7,15 @@ import {
 } from "./sdk-helper";
 import { IGetRFQ } from "../commands/rfqs/get-rfqs";
 import { ICreateRFQ } from "./utils";
+import dexterity, { DexterityWallet } from "@hxronetwork/dexterity-ts";
+import { getTrgs } from "./hxro";
+
+const CONVERGENCE_API_KEY = process.env.CONVERGENCE_API_KEY;
+const config = {
+  headers: {
+    Authorization: CONVERGENCE_API_KEY,
+  },
+};
 
 export async function getRFQs(getRFQJsonData: IGetRFQ) {
   try {
@@ -32,7 +40,9 @@ export async function getRFQs(getRFQJsonData: IGetRFQ) {
     if (getRFQJsonData.rfqAccountAddress)
       queryParams.push(`rfqAccountAddress=${getRFQJsonData.rfqAccountAddress}`);
     if (getRFQJsonData.onlyMyRFQs)
-      queryParams.push(`address=${process.env.PUBLIC_KEY}`);
+      queryParams.push(`userAddress=${process.env.PUBLIC_KEY}`);
+
+    queryParams.push(`cluster=${process.env.CLUSTER}`);
 
     // Construct the query string
     const queryString = queryParams.join("&");
@@ -40,7 +50,8 @@ export async function getRFQs(getRFQJsonData: IGetRFQ) {
     const apiUrl = `${baseUrl}rfqs?${queryString}`;
 
     // Make a GET request to the API
-    const response = await axios.get(apiUrl);
+    const response = await axios.get(apiUrl, config);
+
     if (response.data.status === "success") {
       return response.data.response;
     } else {
@@ -80,24 +91,21 @@ export async function createRFQ(createRFQData: ICreateRFQ) {
       amount: createRFQData.amount,
       quoteMint: createRFQData?.quoteMint,
       baseMint: createRFQData?.baseMint,
-      address: walletAddress,
+      userAddress: walletAddress,
       orderType: createRFQData.orderType,
       rfqSize: createRFQData.rfqSize,
       rfqExpiry: createRFQData.rfqExpiry,
       settlementWindow: createRFQData.settlementWindow,
       strategyData: createRFQData.strategyData,
       optionStyle: createRFQData.optionStyle,
+      counterParties: createRFQData.counterParties,
+      cluster: process.env.CLUSTER,
     };
 
     const balances = await getUserBalances(process.env.PRIVATE_KEY || "");
 
     if (balances?.balances?.dSOL?.tokenBalance === 0) {
       console.error("Low SOL balance, please deposite first");
-      process.exit(1);
-    }
-    //@ts-ignore
-    if (balances?.balances?.USDC?.tokenBalance === 0) {
-      console.error("Low USDC balance, please deposite first.");
       process.exit(1);
     }
 
@@ -108,23 +116,28 @@ export async function createRFQ(createRFQData: ICreateRFQ) {
       await initializeCollateralAccount(cvg, user);
     }
 
-    const reqCollateral = await calcCollateral(requestBody);
-
-    if (balances?.freeCollateral < reqCollateral?.requiredCollateral) {
-      console.error(
-        `Low collateral balance, please add at least ${reqCollateral?.requiredCollateral.toFixed(
-          5,
-        )} collateral first`,
+    if (createRFQData.rfqType == "futures") {
+      console.log("checking trgs...");
+      const tmpManifest = await dexterity.getManifest(
+        cvg.connection.rpcEndpoint,
+        true,
+        cvg.identity() as DexterityWallet,
       );
-      process.exit(1);
-    }
 
+      const trgs = await getTrgs(tmpManifest);
+      
+      if (!trgs || trgs.length == 0) {
+        console.log("No collateral account found, please create first");
+        process.exit(1);
+      }
+    }
     // Make a POST request to the API
-    const response = await axios.post(apiUrl, requestBody);
+    const response = await axios.post(apiUrl, requestBody, config);
+
     if (response.data.status === "success") {
       console.info("Base64 transaction.", response.data.response);
 
-      return response.data.response.response;
+      return response.data.response;
     } else {
       console.error("API request failed.", response);
       process.exit(1);
@@ -145,8 +158,15 @@ export async function getOrdersByRFQId(rfqId: string) {
 
     const apiUrl = `${baseUrl}rfqs/${rfqId}/orders`;
 
+    const requestBody = {
+      cluster: process.env.CLUSTER,
+    };
     // Make a GET request to the API
-    const response = await axios.get(apiUrl);
+    const response = await axios.get(apiUrl, {
+      ...config,
+      data: requestBody,
+    });
+
     if (response.data.status === "success") {
       return response.data.response;
     } else {
@@ -181,13 +201,15 @@ export async function confirmOrder(
 
     // Prepare the request body
     const requestBody = {
-      address: walletAddress,
+      userAddress: walletAddress,
       responseAccount,
       responseSide,
+      cluster: process.env.CLUSTER,
     };
 
     // Make a POST request to the API
-    const response = await axios.put(apiUrl, requestBody);
+    const response = await axios.put(apiUrl, requestBody, config);
+
     if (response.data.status === "success") {
       return response.data.response;
     } else {

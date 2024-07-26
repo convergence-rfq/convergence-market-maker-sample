@@ -2,6 +2,13 @@ import axios from "axios";
 import { airDropSol } from "./utils";
 import { getUserBalances } from "./sdk-helper";
 
+const CONVERGENCE_API_KEY = process.env.CONVERGENCE_API_KEY;
+const config = {
+  headers: {
+    Authorization: CONVERGENCE_API_KEY,
+  },
+};
+
 export async function getCollateralAccount() {
   try {
     const walletAddress = process.env.PUBLIC_KEY || "";
@@ -17,10 +24,18 @@ export async function getCollateralAccount() {
       process.exit(1);
     }
 
-    const apiUrl = `${baseUrl}collateral?address=${walletAddress}`;
+    // Get the NODE_ENV from environment variables
+    const cluster = process.env.CLUSTER;
+    if (!cluster) {
+      console.error("NODE_ENV is not defined in the .env file.");
+      process.exit(1);
+    }
+
+    const apiUrl = `${baseUrl}collateral?userAddress=${walletAddress}&cluster=${cluster}`;
 
     // Make a GET request to the API
-    const response = await axios.get(apiUrl);
+    const response = await axios.get(apiUrl, config);
+
     if (response.data.status === "success") {
       return response.data.response;
     } else {
@@ -41,6 +56,13 @@ export async function createCollateralAccount() {
       console.error("BASE_URL is not defined in the .env file.");
       process.exit(1);
     }
+    // Get the NODE_ENV from environment variables
+    const cluster = process.env.CLUSTER;
+    if (!cluster) {
+      console.error("NODE_ENV is not defined in the .env file.");
+      process.exit(1);
+    }
+
     const apiUrl = `${baseUrl}collateral`;
 
     const walletAddress = process.env.PUBLIC_KEY || "";
@@ -68,11 +90,12 @@ export async function createCollateralAccount() {
 
     // Prepare the request body
     const requestBody = {
-      address: walletAddress,
+      userAddress: walletAddress,
+      cluster,
     };
 
     // Make a POST request to the API
-    const response = await axios.post(apiUrl, requestBody);
+    const response = await axios.post(apiUrl, requestBody, config);
 
     if (response.data.status === "success") {
       return response.data.response;
@@ -102,15 +125,23 @@ export async function addCollateralFund(addCollateralJsonData: any) {
       process.exit(1);
     }
 
+    // Get the NODE_ENV from environment variables
+    const cluster = process.env.CLUSTER;
+    if (!cluster) {
+      console.error("NODE_ENV is not defined in the .env file.");
+      process.exit(1);
+    }
+
     // Prepare the request body
     const requestBody = {
-      address: walletAddress,
+      userAddress: walletAddress,
       amount: addCollateralJsonData.amount,
+      cluster,
     };
 
     // Make a POST request to the API
     const apiUrl = `${baseUrl}collateral/fund`;
-    const response = await axios.post(apiUrl, requestBody);
+    const response = await axios.post(apiUrl, requestBody, config);
 
     if (response.data.status === "success") {
       return response.data.response;
@@ -140,15 +171,23 @@ export async function withdrawCollateralFund(addCollateralJsonData: any) {
       process.exit(1);
     }
 
+    // Get the NODE_ENV from environment variables
+    const cluster = process.env.CLUSTER;
+    if (!cluster) {
+      console.error("NODE_ENV is not defined in the .env file.");
+      process.exit(1);
+    }
+
     // Prepare the request body
     const requestBody = {
-      address: walletAddress,
+      userAddress: walletAddress,
       amount: addCollateralJsonData.amount,
+      cluster,
     };
 
     // Make a POST request to the API
     const apiUrl = `${baseUrl}collateral/withdraw`;
-    const response = await axios.post(apiUrl, requestBody);
+    const response = await axios.post(apiUrl, requestBody, config);
 
     if (response.data.status === "success") {
       return response.data.response;

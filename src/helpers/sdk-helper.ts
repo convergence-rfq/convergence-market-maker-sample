@@ -75,6 +75,16 @@ export async function getBaseAssets(
         if (baseAssetIndex) {
           const baseAssetInfo = baseAssets[baseAssetIndex.value];
           const label = baseAssetInfo.ticker.toUpperCase();
+          if (label === "USDT") return null;
+          if (label === "USDC") return null;
+          const oracleSource = baseAssetInfo.oracleSource;
+          // @ts-ignore
+          const oracleAddress =
+            oracleSource === "switchboard"
+              ? baseAssetInfo.switchboardOracle?.toBase58()
+              : oracleSource === "pyth"
+                ? baseAssetInfo.pythOracle?.toBase58()
+                : "";
           if (label === "SOL") {
             if (network.toLowerCase() === "devnet") {
               if (mint.mintAddress.toBase58() === WRAPPED_SOL_MINT_ADDRESS) {
@@ -83,12 +93,21 @@ export async function getBaseAssets(
                   label: "WSOL",
                   description: getTokenFullName("WSOL"),
                   mintAddress: mint.mintAddress.toString(),
-                  priceFeedAddress:
-                    baseAssetInfo?.priceOracle?.address?.toString(),
+                  priceFeedAddress: oracleAddress,
+                  inPlacePrice:
+                    oracleSource === "in-place"
+                      ? baseAssetInfo.inPlacePrice?.toString()
+                      : "",
                   decimals: mint.decimals,
                   type: mintType,
                   index: baseAssetIndex.value,
                   mint: mintByAddress,
+                  extendedInformation: {
+                    oracleSource: oracleSource,
+                    riskCategory: baseAssetInfo.riskCategory,
+                    tradeable: baseAssetInfo.enabled,
+                    stablecoin: mint.mintType.__kind === "Stablecoin",
+                  },
                 };
               }
               return {
@@ -96,12 +115,21 @@ export async function getBaseAssets(
                 label: "MSOL",
                 description: getTokenFullName("MSOL"),
                 mintAddress: mint.mintAddress.toString(),
-                priceFeedAddress:
-                  baseAssetInfo?.priceOracle?.address?.toString(),
+                priceFeedAddress: oracleAddress,
+                inPlacePrice:
+                  oracleSource === "in-place"
+                    ? baseAssetInfo.inPlacePrice?.toString()
+                    : "",
                 decimals: mint.decimals,
                 type: mintType,
                 index: baseAssetIndex.value,
                 mint: mintByAddress,
+                extendedInformation: {
+                  oracleSource: oracleSource,
+                  riskCategory: baseAssetInfo.riskCategory,
+                  tradeable: baseAssetInfo.enabled,
+                  stablecoin: mint.mintType.__kind === "Stablecoin",
+                },
               };
             } else {
               return {
@@ -109,12 +137,21 @@ export async function getBaseAssets(
                 label: "WSOL",
                 description: getTokenFullName("WSOL"),
                 mintAddress: mint.mintAddress.toString(),
-                priceFeedAddress:
-                  baseAssetInfo?.priceOracle?.address?.toString(),
+                priceFeedAddress: oracleAddress,
+                inPlacePrice:
+                  oracleSource === "in-place"
+                    ? baseAssetInfo.inPlacePrice?.toString()
+                    : "",
                 decimals: mint.decimals,
                 type: mintType,
                 index: baseAssetIndex.value,
                 mint: mintByAddress,
+                extendedInformation: {
+                  oracleSource: oracleSource,
+                  riskCategory: baseAssetInfo.riskCategory,
+                  tradeable: baseAssetInfo.enabled,
+                  stablecoin: mint.mintType.__kind === "Stablecoin",
+                },
               };
             }
           } else {
@@ -123,11 +160,21 @@ export async function getBaseAssets(
               label,
               description: getTokenFullName(label),
               mintAddress: mint.mintAddress.toString(),
-              priceFeedAddress: baseAssetInfo?.priceOracle?.address?.toString(),
+              priceFeedAddress: oracleAddress,
+              inPlacePrice:
+                oracleSource === "in-place"
+                  ? baseAssetInfo.inPlacePrice?.toString()
+                  : "",
               decimals: mint.decimals,
               type: mintType,
               index: baseAssetIndex.value,
               mint: mintByAddress,
+              extendedInformation: {
+                oracleSource,
+                riskCategory: baseAssetInfo.riskCategory,
+                tradeable: baseAssetInfo.enabled,
+                stablecoin: mint.mintType.__kind === "Stablecoin",
+              },
             };
           }
         } else {
@@ -186,7 +233,7 @@ export const getUserBalances = async (privateKeyBase58: string) => {
     cvg.protocol().getRegisteredMints(),
   ]);
 
-  const network = process.env.NODE_ENV || "devnet";
+  const network = process.env.CLUSTER || "devnet";
   const tokenList = await getBaseAssets(
     registeredMints,
     baseAssets,

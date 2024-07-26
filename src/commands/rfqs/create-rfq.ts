@@ -23,6 +23,7 @@ export const createRfqCommand = new Command("create-rfq")
       settlementWindow: 0,
       strategyData: [],
       optionStyle: "",
+      counterParties: [],
     };
 
     try {
@@ -31,7 +32,7 @@ export const createRfqCommand = new Command("create-rfq")
         type: "list",
         name: "rfqType",
         message: "Select RFQ type: ",
-        choices: ["spot", "options"],
+        choices: ["spot", "options", "futures"],
       });
       createRFQData.rfqType = rfqTypeAnswer.rfqType;
 
@@ -41,9 +42,14 @@ export const createRfqCommand = new Command("create-rfq")
         type: "list",
         name: "baseMint",
         message: "Select Base mint: ",
-        choices: tokens.map(
-          (token) => `${token.iconKey} - ${token.mintAddress}`,
-        ),
+        choices:
+          createRFQData.rfqType === "futures"
+            ? tokens
+                .filter((item) => item.iconKey === "msol")
+                .map((token) => `${token.iconKey} - ${token.mintAddress}`)
+            : tokens
+                .filter((item) => item.iconKey !== "usdc")
+                .map((token) => `${token.iconKey} - ${token.mintAddress}`),
       });
       createRFQData.baseMint = baseMintAnswer.baseMint.split("-")[0].trim();
 
@@ -110,6 +116,40 @@ export const createRfqCommand = new Command("create-rfq")
           .toUpperCase()} you want to ${text}`;
       createRFQData.amount = await askAndValidatePositiveNumber(`${message}: `);
 
+      // Ask if the user wants to add counterparty selection
+      const addCounterpartyAnswer = await inquirer.prompt({
+        type: "list",
+        name: "addCounterparty",
+        message: "Do you want to add counter parties?",
+        choices: ["No", "Yes"],
+      });
+
+      if (addCounterpartyAnswer.addCounterparty === "Yes") {
+        const counterParties: string[] = [];
+
+        let addMoreCounterparties = true;
+        while (addMoreCounterparties) {
+          const counterpartyAnswer = await inquirer.prompt({
+            type: "input",
+            name: "counterparty",
+            message: "Enter counter party wallet address: ",
+          });
+
+          counterParties.push(counterpartyAnswer.counterparty);
+
+          const addAnotherAnswer = await inquirer.prompt({
+            type: "list",
+            name: "addAnother",
+            message: "Do you want to add more?",
+            choices: ["No", "Yes"],
+          });
+
+          addMoreCounterparties = addAnotherAnswer.addAnother === "Yes";
+        }
+
+        createRFQData.counterParties = counterParties;
+      }
+
       // If rfqType is "options," ask for IStrategyData
       if (createRFQData.rfqType === "options") {
         // Ask for rfqSize and validate
@@ -145,7 +185,6 @@ export const createRfqCommand = new Command("create-rfq")
             quoteAsset: supportedTokens.quoteMint.toUpperCase(),
             direction: direction === "long" ? true : false,
             instrument: instrument.toUpperCase(),
-            screen: await askAndValidatePositiveNumber("Enter screen price: "),
             strike: await askAndValidatePositiveNumber("Enter strike price: "),
             expiry: 0,
             quantity: 0,
@@ -154,6 +193,7 @@ export const createRfqCommand = new Command("create-rfq")
             legNumber: createRFQData.strategyData.length + 1,
             mintedInstrument: null,
             oracle: 0,
+            productIndex: 0,
           };
 
           // Calculating leg expiry dates and timestamps
@@ -185,10 +225,64 @@ export const createRfqCommand = new Command("create-rfq")
         }
       }
 
+      if (createRFQData.rfqType === "futures") {
+        let addAnotherStrategy = true;
+        while (addAnotherStrategy) {
+          const directionAnswer = await inquirer.prompt({
+            type: "list",
+            name: "direction",
+            message: "Select direction: ",
+            choices: ["short", "long"],
+          });
+          const direction = directionAnswer.direction;
+
+          const instrument = "perp";
+
+          // Ask for IStrategyData fields and validate
+          const strategyData: IStrategyData = {
+            baseAsset: supportedTokens.baseMint.toUpperCase(),
+            quoteAsset: supportedTokens.quoteMint.toUpperCase(),
+            direction: direction === "long" ? true : false,
+            instrument: instrument.toUpperCase(),
+            strike: 0,
+            expiry: 0,
+            quantity: 0,
+            size: await askAndValidatePositiveNumber("Enter size: "),
+            id: `data-${createRFQData.strategyData.length + 1}`,
+            legNumber: createRFQData.strategyData.length + 1,
+            mintedInstrument: null,
+            oracle: 0,
+            productIndex: 2, // only MSOL support at the moment
+          };
+
+          strategyData.quantity = strategyData.size;
+
+          // Add IStrategyData to the strategyData array
+          createRFQData.strategyData.push(strategyData);
+
+          // Ask if the user wants to add another strategyData
+          const addAnotherStrategyAnswer = await inquirer.prompt({
+            type: "list",
+            name: "addAnotherStrategy",
+            message: "Add another strategy data? ",
+            choices: ["No", "Yes"],
+          });
+
+          addAnotherStrategy =
+            addAnotherStrategyAnswer.addAnotherStrategy === "Yes";
+        }
+      }
+
       // Creating base64 transaction
-      const base64Txs = await createRFQ(createRFQData);
-      for (const base64Tx of base64Txs) {
-        const signature = await broadcastTransaction(base64Tx);
+      const result = await createRFQ(createRFQData);
+
+      const tempSinger = result.tempSinger;
+      for (const [index, base64Tx] of result.response.entries()) {
+        const signature =
+          tempSinger && index === 0
+            ? await broadcastTransaction(base64Tx, tempSinger)
+            : await broadcastTransaction(base64Tx);
+
         console.info("Tx Signature.", signature);
       }
     } catch (error: any) {
@@ -287,12 +381,15 @@ async function validateMintAddress(
 
 async function getSupportedTokens() {
   const res = await getUserBalances("");
-  const tokens = Object.keys(res.balances).map((key) => ({
-    //@ts-ignore
-    iconKey: res.balances[key].iconKey.toLowerCase(),
-    //@ts-ignore
-    mintAddress: res.balances[key].mintAddress,
-  }));
+  const supportedTokens = ["msol", "btc", "usdc"];
+  const tokens = Object.keys(res.balances)
+    .map((key) => ({
+      //@ts-ignore
+      iconKey: res.balances[key].iconKey.toLowerCase(),
+      //@ts-ignore
+      mintAddress: res.balances[key].mintAddress,
+    }))
+    .filter((token) => supportedTokens.includes(token.iconKey));
   return tokens;
 }
 

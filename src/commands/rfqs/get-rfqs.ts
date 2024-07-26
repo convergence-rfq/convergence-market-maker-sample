@@ -74,7 +74,7 @@ export const getRfqsCommand = new Command("get-rfqs")
 
             // Ask for instrument
             getRfq.instrument = await askForValidInstrument(
-              "If you want to enter instrumet, enter it [spot, options], otherwise leave it empty: ",
+              "If you want to enter instrumet, enter it [spot, options, futures], otherwise leave it empty: ",
             );
 
             // Get the BASE_URL from environment variables
@@ -160,11 +160,12 @@ async function askForValidInstrument(prompt: string): Promise<string> {
     while (
       input.toLowerCase() !== "spot" &&
       input.toLowerCase() !== "options" &&
+      input.toLowerCase() !== "futures" &&
       input.trim() !== ""
     ) {
       // Ask again for a valid input
       input = await askForValidInput(
-        "Error! Please enter valid instrument [spot, options]: ",
+        "Error! Please enter valid instrument [spot, options, futures]: ",
       );
     }
 

@@ -28,12 +28,6 @@ Install dependencies by running
 $ npm install
 ```
 
-Then, build the project
-
-```
-$ npm run build
-```
-
 Then, execute commands like this
 
 ```
